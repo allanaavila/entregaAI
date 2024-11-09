@@ -14,6 +14,9 @@ class RotaGrafo:
         self.grafo[destino].append((origem, distancia))
 
     def rota_mais_curta(self, inicio, destino):
+        if inicio not in self.grafo or destino not in self.grafo:
+            raise ValueError(f"Origem ou Destino não encontrados no grafo: {inicio}, {destino}")
+
         distancias = {nodo: float('inf') for nodo in self.grafo}
         distancias[inicio] = 0
         heap = [(0, inicio)]
@@ -36,4 +39,5 @@ class RotaGrafo:
         return distancias[destino] if distancias[destino] != float('inf') else None
 
     def __repr__(self):
-        return f"RotaGrafo(grafo={self.grafo})"
+        return f"RotaGrafo(grafo={dict((k, v[:3]) for k, v in self.grafo.items())})"
+

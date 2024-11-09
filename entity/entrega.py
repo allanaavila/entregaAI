@@ -1,5 +1,7 @@
 class Entrega:
     def __init__(self, destino, prazo_entrega, peso):
+        if peso <= 0:
+            raise ValueError("O peso da entrega deve ser maior que zero.")
         self.destino = destino
         self.prazo_entrega = prazo_entrega
         self.peso = peso

@@ -1,46 +1,51 @@
-from repository.banco_dados import BancoDados
-from service.sistema_logistico import SistemaLogistico
+
 from entity.centro_distribuicao import CentroDistribuicao
 from entity.caminhao import Caminhao
-from entity.entrega import Entrega
+from repository.banco_dados import BancoDados
+
 
 def main():
+    # Criando a instância do banco de dados
     banco_dados = BancoDados()
 
-    # Inicializar o sistema logístico
-    sistema = SistemaLogistico(banco_dados)
+    # Criando 4 centros de distribuição
+    centro1 = CentroDistribuicao(nome="São Paulo")
+    centro2 = CentroDistribuicao(nome="Rio de Janeiro")
+    centro3 = CentroDistribuicao(nome="Belo Horizonte")
+    centro4 = CentroDistribuicao(nome="Curitiba")
 
-    # Criar e adicionar centros de distribuição
-    cd_sao_paulo = CentroDistribuicao("Centro de Distribuição de São Paulo")
-    cd_recife = CentroDistribuicao("Centro de Distribuição de Recife")
-    cd_belem = CentroDistribuicao("Centro de Distribuição de Belém")
-    cd_curitiba = CentroDistribuicao("Centro de Distribuição de Curitiba")
+    # Salvando os centros de distribuição no banco de dados
+    banco_dados.salvar_centro(centro1)
+    banco_dados.salvar_centro(centro2)
+    banco_dados.salvar_centro(centro3)
+    banco_dados.salvar_centro(centro4)
 
-    sistema.adicionar_centro_distribuicao(cd_sao_paulo)
-    sistema.adicionar_centro_distribuicao(cd_recife)
-    sistema.adicionar_centro_distribuicao(cd_belem)
-    sistema.adicionar_centro_distribuicao(cd_curitiba)
+    # Criando caminhões para cada centro de distribuição
+    caminhao1 = Caminhao(id="C001", capacidade_maxima=10000, horas_operacao=80, carga_atual=2000, centro=centro1)
+    caminhao2 = Caminhao(id="C002", capacidade_maxima=15000, horas_operacao=70, carga_atual=5000, centro=centro2)
+    caminhao3 = Caminhao(id="C003", capacidade_maxima=8000, horas_operacao=60, carga_atual=1500, centro=centro3)
+    caminhao4 = Caminhao(id="C004", capacidade_maxima=12000, horas_operacao=90, carga_atual=3000, centro=centro4)
 
-    # Criar e adicionar caminhões aos centros de distribuição
-    caminhao_sp = Caminhao("SP001", 10000, 8)
-    caminhao_pa = Caminhao("SP002", 10000, 8)
-    caminhao_pe = Caminhao("SP003", 10000, 8)
-    caminhao_pr = Caminhao("SP004", 10000, 8)
+    # Salvando os caminhões no banco de dados
+    banco_dados.salvar_caminhao(caminhao1, centro1.nome)
+    banco_dados.salvar_caminhao(caminhao2, centro2.nome)
+    banco_dados.salvar_caminhao(caminhao3, centro3.nome)
+    banco_dados.salvar_caminhao(caminhao4, centro4.nome)
 
-    sistema.adicionar_caminhao(caminhao_sp, "Centro de Distribuição de São Paulo")
-    sistema.adicionar_caminhao(caminhao_pa, "Centro de Distribuição de Belém")
-    sistema.adicionar_caminhao(caminhao_pe, "Centro de Distribuição de Recife")
-    sistema.adicionar_caminhao(caminhao_pr, "Centro de Distribuição de Curitiba")
+    # Listando todos os caminhões
+    print("\nLista de caminhões cadastrados:")
+    caminhoes = banco_dados.listar_caminhoes()
+    for caminhao in caminhoes:
+        print(f"ID: {caminhao.id}, Capacidade: {caminhao.capacidade_maxima}, Centro: {caminhao.centro.nome}")
 
-    # Criar e adicionar rotas entre os centros de distribuição
-    sistema.adicionar_rota("Centro de Distribuição de São Paulo", "Centro de Distribuição de Curitiba", 400)
-    sistema.adicionar_rota("Centro de Distribuição de Curitiba", "Centro de Distribuição de Belém", 500)
-    sistema.adicionar_rota("Centro de Distribuição de Curitiba", "Centro de Distribuição de Recife", 750)
+    # Buscando caminhões disponíveis com capacidade mínima necessária
+    capacidade_necessaria = 9000
+    print(f"\nCaminhões disponíveis para uma carga de {capacidade_necessaria} kg:")
+    caminhoneiros_disponiveis = banco_dados.buscar_caminhao_disponivel(capacidade_necessaria)
+    for caminhao in caminhoneiros_disponiveis:
+        print(f"ID: {caminhao.id}, Capacidade: {caminhao.capacidade_maxima}, Centro: {caminhao.centro.nome}")
 
-    # Criar entrega e alocar para um centro de distribuição
-    entrega_curitiba = Entrega("Centro de Distribuição de Curitiba", "2024-12-15", 500)
-    sistema.alocar_entrega("Centro de Distribuição de São Paulo", entrega_curitiba)
-
+    # Fechar a conexão com o banco de dados
     banco_dados.fechar_conexao()
 
 if __name__ == "__main__":
