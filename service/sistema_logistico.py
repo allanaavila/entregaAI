@@ -1,48 +1,37 @@
-from repository.banco_dados import BancoDados
-from repository.caminhao_repository import CaminhaoRepository
-from repository.centro_distribuicao_repository import CentroDistribuicaoRepository
-from entity.rota import RotaGrafo
+class Logistica:
+    def __init__(self, centros, caminhoes, entregas, grafo):
+        self.centros = centros
+        self.caminhoes = caminhoes
+        self.entregas = entregas
+        self.grafo = grafo
 
-class SistemaLogistico:
-    def __init__(self, banco_dados):
-        self.centro_repositorio = CentroDistribuicaoRepository(banco_dados)
-        self.caminhao_repositorio = CaminhaoRepository(banco_dados)
-        self.grafo_rotas = RotaGrafo()
+    def alocar_caminhoes(self):
+        alocacao = {}
 
-    def adicionar_centro_distribuicao(self, centro):
-        self.centro_repositorio.salvar(centro)
+        for entrega in self.entregas:
+            melhor_rota = None
+            melhor_distancia = float('inf')
+            caminhao_alocado = None
 
-    def adicionar_caminhao(self, caminhao, centro_nome):
-        centro = self.centro_repositorio.buscar(centro_nome)
-        if centro:
-            centro.adicionar_caminhao(caminhao)
-            self.caminhao_repositorio.salvar(caminhao, centro_nome)
+            for centro in self.centros:
+                distancia = self.grafo.rota_mais_curta(centro, entrega.destino)
+                if distancia < melhor_distancia:
+                    melhor_distancia = distancia
+                    melhor_rota = centro
 
-    def adicionar_rota(self, origem, destino, distancia):
-        self.grafo_rotas.adicionar_rota(origem, destino, distancia)
+            for caminhao in self.caminhoes:
+                if caminhao.centro_distribuicao == melhor_rota and caminhao.pode_transportar(entrega.peso):
+                    caminhao.adicionar_carga(entrega.peso)
+                    alocacao[entrega] = caminhao
+                    break
 
-    def alocar_entrega(self, centro_nome, entrega):
-        centro = self.centro_repositorio.buscar(centro_nome)
-        if centro:
-            caminhao = self._selecionar_caminhao(centro, entrega.peso)
-            if caminhao:
-                distancia = self.grafo_rotas.rota_mais_curta(centro_nome, entrega.destino)
-                if distancia:
-                    print(
-                        f"Entrega (Destino: {entrega.destino}, Prazo: {entrega.prazo_entrega}, Peso: {entrega.peso} kg) "
-                        f"alocada ao caminhão {caminhao.id}.\n"
-                        f"Rota: {centro_nome} -> {entrega.destino}, Distância: {distancia} km."
-                    )
-                else:
-                    print(f"Não foi possível encontrar uma rota para o destino {entrega.destino}.")
-            else:
-                print("Nenhum caminhão disponível com capacidade para a entrega.")
-        else:
-            print(f"Centro de distribuição {centro_nome} não encontrado.")
+        return alocacao
 
-    def _selecionar_caminhao(self, centro, peso_entrega):
-        for caminhao in centro.caminhoes:
-            if caminhao.pode_carregar(peso_entrega):
-                caminhao.carga_atual += peso_entrega
+    def encontrar_caminhao_adequado(self, centro, peso):
+        for caminhao in self.caminhoes:
+            if caminhao.centro_distribuicao == centro and caminhao.capacidade >= peso:
                 return caminhao
         return None
+
+    def calcular_rota_ideal(self, origem, destino):
+        return self.grafo.rotas.get((origem, destino), None)

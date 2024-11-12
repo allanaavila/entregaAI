@@ -1,52 +1,45 @@
-
-from entity.centro_distribuicao import CentroDistribuicao
 from entity.caminhao import Caminhao
-from repository.banco_dados import BancoDados
-
+from entity.entrega import Entrega
+from entity.rota import RotaGrafo
+from service.sistema_logistico import Logistica
 
 def main():
-    # Criando a instância do banco de dados
-    banco_dados = BancoDados()
+    # 1. Criando os centros de distribuição
+    centros = ["Belém", "Recife", "São Paulo", "Curitiba"]
 
-    # Criando 4 centros de distribuição
-    centro1 = CentroDistribuicao(nome="São Paulo")
-    centro2 = CentroDistribuicao(nome="Rio de Janeiro")
-    centro3 = CentroDistribuicao(nome="Belo Horizonte")
-    centro4 = CentroDistribuicao(nome="Curitiba")
+    # 2. Criando os caminhões com capacidades e horas de operação
+    caminhao1 = Caminhao(id=1, capacidade=5000, horas_operacao=10, centro_distribuicao="Belém")
+    caminhao2 = Caminhao(id=2, capacidade=6000, horas_operacao=8, centro_distribuicao="Recife")
+    caminhao3 = Caminhao(id=3, capacidade=7000, horas_operacao=9, centro_distribuicao="São Paulo")
+    caminhao4 = Caminhao(id=4, capacidade=8000, horas_operacao=12, centro_distribuicao="Curitiba")
 
-    # Salvando os centros de distribuição no banco de dados
-    banco_dados.salvar_centro(centro1)
-    banco_dados.salvar_centro(centro2)
-    banco_dados.salvar_centro(centro3)
-    banco_dados.salvar_centro(centro4)
+    caminhoes = [caminhao1, caminhao2, caminhao3, caminhao4]
 
-    # Criando caminhões para cada centro de distribuição
-    caminhao1 = Caminhao(id="C001", capacidade_maxima=10000, horas_operacao=80, carga_atual=2000, centro=centro1)
-    caminhao2 = Caminhao(id="C002", capacidade_maxima=15000, horas_operacao=70, carga_atual=5000, centro=centro2)
-    caminhao3 = Caminhao(id="C003", capacidade_maxima=8000, horas_operacao=60, carga_atual=1500, centro=centro3)
-    caminhao4 = Caminhao(id="C004", capacidade_maxima=12000, horas_operacao=90, carga_atual=3000, centro=centro4)
+    # 3. Criando as entregas com destino, prazo e peso
+    entrega1 = Entrega(destino="Recife", prazo_entrega="2024-11-20", peso=1500, prioridade=1)
+    entrega2 = Entrega(destino="São Paulo", prazo_entrega="2024-11-18", peso=3000, prioridade=2)
+    entrega3 = Entrega(destino="Curitiba", prazo_entrega="2024-11-15", peso=2000, prioridade=3)
+    entrega4 = Entrega(destino="Belém", prazo_entrega="2024-11-22", peso=2500, prioridade=1)
 
-    # Salvando os caminhões no banco de dados
-    banco_dados.salvar_caminhao(caminhao1, centro1.nome)
-    banco_dados.salvar_caminhao(caminhao2, centro2.nome)
-    banco_dados.salvar_caminhao(caminhao3, centro3.nome)
-    banco_dados.salvar_caminhao(caminhao4, centro4.nome)
+    entregas = [entrega1, entrega2, entrega3, entrega4]
 
-    # Listando todos os caminhões
-    print("\nLista de caminhões cadastrados:")
-    caminhoes = banco_dados.listar_caminhoes()
-    for caminhao in caminhoes:
-        print(f"ID: {caminhao.id}, Capacidade: {caminhao.capacidade_maxima}, Centro: {caminhao.centro.nome}")
+    # 4. Criando o grafo de rotas com as distâncias entre os centros de distribuição
+    grafo = RotaGrafo()
+    grafo.adicionar_rota("Belém", "Recife", -1.4558, -48.5044, -8.0476, -34.8770)
+    grafo.adicionar_rota("Recife", "São Paulo", -8.0476, -34.8770, -23.5505, -46.6333)
+    grafo.adicionar_rota("São Paulo", "Curitiba", -23.5505, -46.6333, -25.4284, -49.2733)
+    grafo.adicionar_rota("Curitiba", "Recife", -25.4284, -49.2733, -8.0476, -34.8770)
 
-    # Buscando caminhões disponíveis com capacidade mínima necessária
-    capacidade_necessaria = 9000
-    print(f"\nCaminhões disponíveis para uma carga de {capacidade_necessaria} kg:")
-    caminhoneiros_disponiveis = banco_dados.buscar_caminhao_disponivel(capacidade_necessaria)
-    for caminhao in caminhoneiros_disponiveis:
-        print(f"ID: {caminhao.id}, Capacidade: {caminhao.capacidade_maxima}, Centro: {caminhao.centro.nome}")
+    # 5. Instanciando o sistema logístico para otimização
+    logistica = Logistica(centros, caminhoes, entregas, grafo)
 
-    # Fechar a conexão com o banco de dados
-    banco_dados.fechar_conexao()
+    # 6. Alocando os caminhões de acordo com as entregas e o centro de distribuição mais próximo
+    alocacao = logistica.alocar_caminhoes()
+
+    # 7. Exibindo o resultado da alocação
+    print("Alocação de Caminhões para as Entregas:")
+    for entrega, caminhao in alocacao.items():
+        print(f"Entrega para {entrega.destino} (Prazo: {entrega.prazo_entrega}, Peso: {entrega.peso}kg) - Alocada ao {caminhao}")
 
 if __name__ == "__main__":
     main()
