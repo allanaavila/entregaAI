@@ -18,7 +18,6 @@ class Cliente(Base):
     latitude = Column(Float)
     longitude = Column(Float)
 
-    # Relacionamentos
     entregas = relationship("Entrega", back_populates="cliente")
 
     created_at = Column(DateTime, default=datetime.now())

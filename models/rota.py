@@ -1,9 +1,9 @@
 from datetime import datetime
 
-from sqlalchemy import Column, Integer, String, Float, DateTime, ForeignKey
+from sqlalchemy import Column, Integer, String, Float, DateTime, ForeignKey, Enum
 from sqlalchemy.orm import relationship
 
-from models.models import Base, entrega_rota
+from models.models import Base, entrega_rota, StatusEntrega
 
 
 class Rota(Base):
@@ -13,11 +13,10 @@ class Rota(Base):
     codigo = Column(String(20), unique=True, nullable=False)
     data_inicio = Column(DateTime)
     data_fim = Column(DateTime)
-    distancia_total = Column(Float)  # em km
+    distancia_total = Column(Float)
     custo_total = Column(Float)
-    status = Column(String(20))
+    status = Column(Enum(StatusEntrega), default=StatusEntrega.PENDENTE)
 
-    # Relacionamentos
     caminhao_id = Column(Integer, ForeignKey('caminhoes.id'))
     caminhao = relationship("Caminhao", back_populates="rotas")
 

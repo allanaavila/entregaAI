@@ -3,26 +3,24 @@ from typing import List, Optional
 from contextlib import contextmanager
 from models.centro_distribuicao import CentroDistribuicao
 from models.caminhao import Caminhao
+from service.sistema_logistico import logger
 
 
 class ErroBancoDados(Exception):
-    """Exceção personalizada para operações no banco de dados."""
     pass
-
 
 class BancoDados:
     def __init__(self, nome_bd: str = "entregaAI.db"):
-        """Inicializa a conexão com o banco de dados com melhor tratamento de erros."""
         try:
             self.conn = sqlite3.connect(nome_bd)
             self.cursor = self.conn.cursor()
             self.criar_tabelas()
         except sqlite3.Error as e:
+            logger.error(f"Falha ao inicializar o banco de dados: {str(e)}")
             raise ErroBancoDados(f"Falha ao inicializar o banco de dados: {str(e)}")
 
     @contextmanager
     def transacao(self):
-        """Gerenciador de contexto para lidar com transações no banco de dados."""
         try:
             yield self.cursor
             self.conn.commit()
@@ -31,7 +29,6 @@ class BancoDados:
             raise ErroBancoDados(f"Falha na transação: {str(e)}")
 
     def criar_tabelas(self) -> None:
-        """Cria as tabelas do banco de dados com um esquema melhorado."""
         try:
             with self.transacao() as cursor:
                 cursor.execute("""
@@ -41,7 +38,6 @@ class BancoDados:
                         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
                     )
                 """)
-
                 cursor.execute("""
                     CREATE TABLE IF NOT EXISTS caminhao (
                         id TEXT PRIMARY KEY,
@@ -59,7 +55,6 @@ class BancoDados:
             raise ErroBancoDados(f"Falha ao criar tabelas: {str(e)}")
 
     def salvar_centro(self, centro: CentroDistribuicao) -> None:
-        """Salvar ou atualizar o centro de distribuição com tratamento de erro."""
         try:
             with self.transacao() as cursor:
                 cursor.execute(
@@ -67,11 +62,12 @@ class BancoDados:
                     (centro.nome,)
                 )
                 centro.id = cursor.lastrowid
+                logger.info(f"Centro de distribuição '{centro.nome}' salvo com sucesso.")
         except ErroBancoDados as e:
+            logger.error(f"Falha ao salvar centro de distribuição '{centro.nome}': {str(e)}")
             raise ErroBancoDados(f"Falha ao salvar centro de distribuição: {str(e)}")
 
     def buscar_centro(self, nome: str) -> Optional[CentroDistribuicao]:
-        """Buscar centro de distribuição pelo nome."""
         try:
             self.cursor.execute(
                 "SELECT id, nome FROM centro_distribuicao WHERE nome = ?",
@@ -83,7 +79,6 @@ class BancoDados:
             raise ErroBancoDados(f"Falha ao buscar centro de distribuição: {str(e)}")
 
     def listar_caminhoes(self) -> List[Caminhao]:
-        """Listar todos os caminhões com informações de seu centro de distribuição."""
         try:
             self.cursor.execute("""
                 SELECT 
@@ -99,29 +94,33 @@ class BancoDados:
                 LEFT JOIN centro_distribuicao cd ON c.centro_id = cd.id
                 ORDER BY c.id
             """)
-
             rows = self.cursor.fetchall()
-            return [
-                Caminhao(
+            caminhoes = []
+            for row in rows:
+                centro = CentroDistribuicao(id=row[6], nome=row[7]) if row[6] is not None else None
+                caminhao = Caminhao(
                     id=row[0],
                     capacidade_maxima=row[1],
                     horas_operacao=row[2],
                     carga_atual=row[3],
-                    centro=CentroDistribuicao(id=row[6], nome=row[7]) if row[6] else None
+                    status=row[4],
+                    ultima_atualizacao=row[5],
+                    centro=centro
                 )
-                for row in rows
-            ] if rows else []
-
+                caminhoes.append(caminhao)
+            return caminhoes
         except sqlite3.Error as e:
             raise ErroBancoDados(f"Falha ao listar caminhões: {str(e)}")
 
     def salvar_caminhao(self, caminhao: Caminhao, centro_nome: str) -> None:
-        """Salvar ou atualizar caminhão com validação e tratamento de erro."""
-        try:
-            centro = self.buscar_centro(centro_nome)
-            if not centro:
-                raise ErroBancoDados(f"Centro de distribuição '{centro_nome}' não encontrado")
+        if not caminhao.id or caminhao.capacidade_maxima <= 0 or caminhao.carga_atual < 0:
+            raise ErroBancoDados(f"Dados inválidos para o caminhão: {caminhao.id}")
 
+        centro = self.buscar_centro(centro_nome)
+        if not centro:
+            raise ErroBancoDados(f"Centro de distribuição '{centro_nome}' não encontrado")
+
+        try:
             with self.transacao() as cursor:
                 cursor.execute("""
                     INSERT OR REPLACE INTO caminhao (
@@ -139,7 +138,6 @@ class BancoDados:
             raise ErroBancoDados(f"Falha ao salvar caminhão: {str(e)}")
 
     def buscar_caminhao_disponivel(self, capacidade_necessaria: int) -> List[Caminhao]:
-        """Buscar caminhões disponíveis com a capacidade necessária."""
         try:
             self.cursor.execute("""
                 SELECT c.*, cd.nome as centro_nome 
@@ -166,33 +164,38 @@ class BancoDados:
             raise ErroBancoDados(f"Falha ao buscar caminhões disponíveis: {str(e)}")
 
     def atualizar_status_caminhao(self, caminhao_id: str, status: str) -> None:
-        """Atualizar o status do caminhão com validação."""
         status_validos = {'disponivel', 'em_rota', 'manutencao'}
         if status not in status_validos:
             raise ValueError(f"Status inválido. Deve ser um dos seguintes: {status_validos}")
 
+        self.cursor.execute("SELECT status FROM caminhao WHERE id = ?", (caminhao_id,))
+        row = self.cursor.fetchone()
+        if row and row[0] == status:
+            logger.info(f"Status do caminhão {caminhao_id} já é '{status}'. Nenhuma atualização necessária.")
+            return
+
         try:
             with self.transacao() as cursor:
                 cursor.execute("""
-                    UPDATE caminhao 
-                    SET status = ?, ultima_atualizacao = CURRENT_TIMESTAMP
-                    WHERE id = ?
-                """, (status, caminhao_id))
+                        UPDATE caminhao 
+                        SET status = ?, ultima_atualizacao = CURRENT_TIMESTAMP
+                        WHERE id = ?
+                    """, (status, caminhao_id))
+            logger.info(f"Status do caminhão {caminhao_id} atualizado para '{status}'.")
         except ErroBancoDados as e:
             raise ErroBancoDados(f"Falha ao atualizar o status do caminhão: {str(e)}")
 
     def __enter__(self):
-        """Suporte ao protocolo de gerenciador de contexto."""
         return self
 
     def __exit__(self, exc_type, exc_val, exc_tb):
-        """Garantir o fechamento correto dos recursos do banco de dados."""
         self.fechar_conexao()
 
     def fechar_conexao(self) -> None:
-        """Fechar a conexão com o banco de dados de maneira segura."""
         try:
             if self.conn:
                 self.conn.close()
+                logger.info("Conexão com o banco de dados fechada com sucesso.")
         except sqlite3.Error as e:
+            logger.error(f"Erro ao fechar a conexão com o banco de dados: {str(e)}")
             raise ErroBancoDados(f"Erro ao fechar a conexão com o banco de dados: {str(e)}")

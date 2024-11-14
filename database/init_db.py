@@ -2,15 +2,23 @@ from database.config import get_engine, get_session
 from models.centro_distribuicao import CentroDistribuicao
 from models.models import Base
 
+import logging
+
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
+
 
 def init_database():
     engine = get_engine()
     Base.metadata.create_all(engine)
-    inserir_dados_iniciais()
-
-
-def inserir_dados_iniciais():
     session = get_session()
+    try:
+        inserir_dados_iniciais(session)
+    finally:
+        session.close()
+
+
+def inserir_dados_iniciais(session):
 
     cds_iniciais = [
         CentroDistribuicao(
@@ -62,9 +70,7 @@ def inserir_dados_iniciais():
                 session.add(cd)
 
         session.commit()
-        print("Dados iniciais inseridos com sucesso!")
+        logger.info("Dados iniciais inseridos com sucesso!")
     except Exception as e:
-        print(f"Erro ao inserir dados iniciais: {str(e)}")
+        logger.error(f"Erro ao inserir dados iniciais: {str(e)}")
         session.rollback()
-    finally:
-        session.close()

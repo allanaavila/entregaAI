@@ -17,7 +17,7 @@ class CentroDistribuicao(Base):
     estado = Column(String(2), nullable=False)
     latitude = Column(Float, nullable=False)
     longitude = Column(Float, nullable=False)
-    capacidade_maxima = Column(Float)  # em kg ou m³
+    capacidade_maxima = Column(Float)
 
     caminhoes = relationship("Caminhao", back_populates="centro_distribuicao")
     entregas = relationship("Entrega", back_populates="centro_distribuicao")

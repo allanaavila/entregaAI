@@ -3,7 +3,8 @@ from datetime import datetime
 from sqlalchemy import Column, Integer, String, Float, DateTime, Enum, ForeignKey
 from sqlalchemy.orm import relationship
 
-from models.models import Base, StatusEntrega, entrega_rota
+from models.models import Base, entrega_rota, StatusEntrega
+
 
 class Entrega(Base):
     __tablename__ = 'entregas'
@@ -16,7 +17,6 @@ class Entrega(Base):
     prioridade = Column(Integer, default=0)
     status = Column(Enum(StatusEntrega), default=StatusEntrega.PENDENTE)
 
-    # Endereço de entrega
     endereco_entrega = Column(String(200), nullable=False)
     cidade_entrega = Column(String(100), nullable=False)
     estado_entrega = Column(String(2), nullable=False)
