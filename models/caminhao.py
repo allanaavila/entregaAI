@@ -1,4 +1,5 @@
 from datetime import datetime
+from typing import NoReturn, Any
 
 from sqlalchemy import Column, Integer, String, Float, DateTime, Enum, ForeignKey
 from sqlalchemy.orm import relationship
@@ -16,9 +17,9 @@ class Caminhao(Base):
     velocidade_media = Column(Float, nullable=False)
     custo_km = Column(Float, nullable=False)
     status = Column(Enum(StatusCaminhao), default=StatusCaminhao.DISPONIVEL)
-
+    horas_operacao = Column(Integer)
     #
-    centro_distribuicao_id = Column(Integer, ForeignKey('centros_distribuicao.id'))
+    centro_distribuicao_id = Column(Integer, ForeignKey('centros_distribuicao.id'), nullable=False)
     centro_distribuicao = relationship("CentroDistribuicao", back_populates="caminhoes")
     rotas = relationship("Rota", back_populates="caminhao")
 
@@ -30,21 +31,23 @@ class Caminhao(Base):
     created_at = Column(DateTime, default=datetime.now())
     updated_at = Column(DateTime, default=datetime.now(), onupdate=datetime.now())
 
-    def pode_transportar(self, peso):
-        return self.capacidade - self.carga_atual >= peso
+    def pode_transportar(self, peso: float) -> bool:
+        return (self.capacidade - self.carga_atual) >= peso
 
-    def adicionar_carga(self, peso):
+    def adicionar_carga(self, peso: float) -> NoReturn:
+        """
+        Adiciona uma carga ao caminhão, se houver capacidade suficiente.
+
+        :param peso: A quantidade de carga a ser adicionada, em Kg.
+        :type peso: float
+        :return: None
+        :rtype: None
+        :raises ValueError: Se o peso exceder a capacidade restante do caminhão.
+        """
         if self.pode_transportar(peso):
             self.carga_atual += peso
         else:
             raise ValueError(f"O caminhão {self.placa} não tem capacidade suficiente para essa carga.")
 
-
-
-
-
-
-
-
-
-
+from models.rota import Rota
+from models.centro_distribuicao import CentroDistribuicao

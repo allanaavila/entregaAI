@@ -7,30 +7,27 @@ from database.config import get_session
 from models.centro_distribuicao import CentroDistribuicao
 from models.entrega import Entrega
 
-
 class CalcularDistancia:
     def __init__(self):
         self.__user_agent = os.getenv("NOMINATIM_USER_AGENT", "default_user_agent")
         self.geolocator = Nominatim(user_agent=self.__user_agent)
         self.grafo = nx.Graph()
 
-    def obter_coordenadas(self, endereco):
-        try:
-            local = self.geolocator.geocode(endereco)
-            if local is None:
-                print(f"Erro: Não foi possível encontrar o endereço: {endereco}")
-                return None, None
-            return local.latitude, local.longitude
-        except Exception as e:
-            print(f"Erro ao geolocalizar o endereço {endereco}: {e}")
-            return None, None
 
-    def calcular_distancia(self, endereco_inicial, endereco_final):
-        latitude_inicial, longitude_inicial = self.obter_coordenadas(endereco_inicial)
-        latitude_final, longitude_final = self.obter_coordenadas(endereco_final)
+    def calcular_distancia(self, coordenadas_partida: tuple, coordenadas_entrega: tuple) -> float | None:
+        """
+        Calcula a distância entre dois pontos geográficos em quilômetros
+        :param coordenadas_partida: Formato de entrada:(latitude, longitude) Latitude e Longitude do Centro de Saída da Entrega
+        :type coordenadas_partida: tuple
+        :param coordenadas_entrega: Formato de entrada:(latitude, longitude) Latitude e Longitude do Endereço de Entrega
+        :type coordenadas_entrega: tuple
+        :return:
+        """
+        latitude_inicial, longitude_inicial = coordenadas_partida
+        latitude_final, longitude_final = coordenadas_entrega
 
         if None in [latitude_inicial, longitude_inicial, latitude_final, longitude_final]:
-            return None
+            return
 
         distancia = geodesic((latitude_inicial, longitude_inicial), (latitude_final, longitude_final)).kilometers
         return distancia
@@ -89,6 +86,3 @@ class CalcularDistancia:
     def atualizar_grafo(self, centros_distribuicao, destinos):
         self.grafo.clear()
         self.construir_grafo(centros_distribuicao, destinos)
-
-
-

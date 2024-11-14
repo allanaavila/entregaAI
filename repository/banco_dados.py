@@ -1,8 +1,12 @@
 import sqlite3
-from typing import List, Optional
+from typing import List, Optional, Type
 from contextlib import contextmanager
+
+from sqlalchemy.orm import Session
+
 from models.centro_distribuicao import CentroDistribuicao
 from models.caminhao import Caminhao
+from models.entrega import Entrega
 from service.sistema_logistico import logger
 
 
@@ -10,7 +14,8 @@ class ErroBancoDados(Exception):
     pass
 
 class BancoDados:
-    def __init__(self, nome_bd: str = "entregaAI.db"):
+    def __init__(self, session: Session,nome_bd: str = "entregaAI.db"):
+        self.session = session
         try:
             self.conn = sqlite3.connect(nome_bd)
             self.cursor = self.conn.cursor()
@@ -67,74 +72,38 @@ class BancoDados:
             logger.error(f"Falha ao salvar centro de distribuição '{centro.nome}': {str(e)}")
             raise ErroBancoDados(f"Falha ao salvar centro de distribuição: {str(e)}")
 
-    def buscar_centro(self, nome: str) -> Optional[CentroDistribuicao]:
+    def buscar_centro(self, codigo: str) -> Optional[CentroDistribuicao]:
         try:
-            self.cursor.execute(
-                "SELECT id, nome FROM centro_distribuicao WHERE nome = ?",
-                (nome,)
-            )
-            row = self.cursor.fetchone()
-            return CentroDistribuicao(id=row[0], nome=row[1]) if row else None
-        except sqlite3.Error as e:
+            centro = self.session.query(CentroDistribuicao).filter_by(codigo=codigo).first()
+            return centro
+        except Exception as e:
             raise ErroBancoDados(f"Falha ao buscar centro de distribuição: {str(e)}")
 
-    def listar_caminhoes(self) -> List[Caminhao]:
+    def listar_caminhoes(self) -> list[Type[Caminhao]]:
         try:
-            self.cursor.execute("""
-                SELECT 
-                    c.id,
-                    c.capacidade_maxima,
-                    c.horas_operacao,
-                    c.carga_atual,
-                    c.status,
-                    c.ultima_atualizacao,
-                    cd.id as centro_id,
-                    cd.nome as centro_nome
-                FROM caminhao c
-                LEFT JOIN centro_distribuicao cd ON c.centro_id = cd.id
-                ORDER BY c.id
-            """)
-            rows = self.cursor.fetchall()
-            caminhoes = []
-            for row in rows:
-                centro = CentroDistribuicao(id=row[6], nome=row[7]) if row[6] is not None else None
-                caminhao = Caminhao(
-                    id=row[0],
-                    capacidade_maxima=row[1],
-                    horas_operacao=row[2],
-                    carga_atual=row[3],
-                    status=row[4],
-                    ultima_atualizacao=row[5],
-                    centro=centro
-                )
-                caminhoes.append(caminhao)
+            caminhoes = self.session.query(Caminhao).all()
             return caminhoes
-        except sqlite3.Error as e:
+        except Exception as e:
             raise ErroBancoDados(f"Falha ao listar caminhões: {str(e)}")
 
-    def salvar_caminhao(self, caminhao: Caminhao, centro_nome: str) -> None:
-        if not caminhao.id or caminhao.capacidade_maxima <= 0 or caminhao.carga_atual < 0:
-            raise ErroBancoDados(f"Dados inválidos para o caminhão: {caminhao.id}")
-
-        centro = self.buscar_centro(centro_nome)
-        if not centro:
-            raise ErroBancoDados(f"Centro de distribuição '{centro_nome}' não encontrado")
-
+    def listar_centros(self) -> list[Type[CentroDistribuicao]]:
         try:
-            with self.transacao() as cursor:
-                cursor.execute("""
-                    INSERT OR REPLACE INTO caminhao (
-                        id, capacidade_maxima, horas_operacao, carga_atual, 
-                        centro_id, status, ultima_atualizacao
-                    ) VALUES (?, ?, ?, ?, ?, 'disponivel', CURRENT_TIMESTAMP)
-                """, (
-                    caminhao.id,
-                    caminhao.capacidade_maxima,
-                    caminhao.horas_operacao,
-                    caminhao.carga_atual,
-                    centro.id
-                ))
-        except ErroBancoDados as e:
+            centros_distribuicao = self.session.query(CentroDistribuicao).all()
+            return centros_distribuicao
+        except Exception as e:
+            raise ErroBancoDados(f"Falha ao listar caminhões: {str(e)}")
+
+    def listar_entregas(self) -> list[Type[Entrega]]:
+        try:
+            entregas = self.session.query(Entrega).all()
+            return entregas
+        except Exception as e:
+            raise ErroBancoDados(f"Falha ao listar caminhões: {str(e)}")
+
+    def salvar_caminhao(self, caminhao: Caminhao, session: Session) -> None:
+        try:
+            self.session.add(caminhao)
+        except Exception as e:
             raise ErroBancoDados(f"Falha ao salvar caminhão: {str(e)}")
 
     def buscar_caminhao_disponivel(self, capacidade_necessaria: int) -> List[Caminhao]:
@@ -150,16 +119,19 @@ class BancoDados:
             """, (capacidade_necessaria, capacidade_necessaria))
 
             rows = self.cursor.fetchall()
-            return [
-                Caminhao(
+            caminhoes = []
+            for row in rows:
+                caminhao = Caminhao(
                     id=row[0],
-                    capacidade_maxima=row[1],
+                    capacidade=row[1],
                     horas_operacao=row[2],
                     carga_atual=row[3],
-                    centro=CentroDistribuicao(id=row[4], nome=row[8])
+                    status=row[4],
+                    updated_at=row[5],
+                    centro_distribuicao_id=row[6]
                 )
-                for row in rows
-            ]
+                caminhoes.append(caminhao)
+            return caminhoes
         except sqlite3.Error as e:
             raise ErroBancoDados(f"Falha ao buscar caminhões disponíveis: {str(e)}")
 

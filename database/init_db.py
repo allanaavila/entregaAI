@@ -11,15 +11,9 @@ logger = logging.getLogger(__name__)
 def init_database():
     engine = get_engine()
     Base.metadata.create_all(engine)
-    session = get_session()
-    try:
-        inserir_dados_iniciais(session)
-    finally:
-        session.close()
 
 
 def inserir_dados_iniciais(session):
-
     cds_iniciais = [
         CentroDistribuicao(
             codigo="CD-PA",

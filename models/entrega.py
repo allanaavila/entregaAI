@@ -20,8 +20,8 @@ class Entrega(Base):
     endereco_entrega = Column(String(200), nullable=False)
     cidade_entrega = Column(String(100), nullable=False)
     estado_entrega = Column(String(2), nullable=False)
-    latitude_entrega = Column(Float)
-    longitude_entrega = Column(Float)
+    latitude_entrega = Column(Float, nullable=False)
+    longitude_entrega = Column(Float, nullable=False)
 
     cliente_id = Column(Integer, ForeignKey('clientes.id'))
     cliente = relationship("Cliente", back_populates="entregas")
@@ -33,3 +33,7 @@ class Entrega(Base):
 
     created_at = Column(DateTime, default=datetime.now())
     updated_at = Column(DateTime, default=datetime.now(), onupdate=datetime.now())
+
+from models.cliente import Cliente
+from models.centro_distribuicao import CentroDistribuicao
+from models.rota import Rota

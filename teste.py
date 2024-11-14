@@ -1,12 +1,10 @@
 from database.config import get_session
 from database.init_db import init_database
-from models.caminhao import Caminhao
 from models.centro_distribuicao import CentroDistribuicao
 from models.entrega import Entrega
 from repository.banco_dados import BancoDados
 from service.sistema_logistico import Logistica
 from util.calcular_distancia import CalcularDistancia
-
 
 def main():
     session = get_session()
@@ -58,12 +56,18 @@ def main():
     ]
     """
 
-    centro_sp: CentroDistribuicao = banco_de_dados.buscar_centro(codigo="CD-SP")
-    centro_pr: CentroDistribuicao = banco_de_dados.buscar_centro(codigo="CD-PR")
-    centro_pe: CentroDistribuicao = banco_de_dados.buscar_centro(codigo="CD-PE")
-    centro_pa: CentroDistribuicao = banco_de_dados.buscar_centro(codigo="CD-PA")
 
-    centros_distribuicao = banco_de_dados.listar_centros()
+    centro_sp:CentroDistribuicao = banco_de_dados.buscar_centro(codigo="CD-SP", session=session)
+    centro_pr:CentroDistribuicao = banco_de_dados.buscar_centro(codigo="CD-PR", session=session)
+    centro_pe:CentroDistribuicao = banco_de_dados.buscar_centro(codigo="CD-PE", session=session)
+    centro_pa:CentroDistribuicao = banco_de_dados.buscar_centro(codigo="CD-PA", session=session)
+
+    centros_distribuicao = [
+        centro_sp,
+        centro_pr,
+        centro_pa,
+        centro_pe
+    ]
 
     caminhoes = banco_de_dados.listar_caminhoes()
 
@@ -72,7 +76,7 @@ def main():
         Caminhao(id=1, placa="ABC-1234", modelo="Truck A", capacidade=10000, velocidade_media=80, custo_km=3.0, centro_distribuicao_id=centro_sp.id),
         Caminhao(id=2, placa="XYZ-5678", modelo="Truck B", capacidade=8000, velocidade_media=70, custo_km=3.5, centro_distribuicao_id=centro_pr.id)
     ]
-
+    
     session.add_all(caminhoes)
     session.commit()
     """
@@ -90,19 +94,17 @@ def main():
     session.commit()
     """
 
-    entregas = banco_de_dados.listar_entregas()
+    entregas = session.query(Entrega).all()
 
     calculadora_distancia = CalcularDistancia()
 
-    logistica = Logistica(centros=centros_distribuicao, caminhoes=caminhoes, entregas=entregas,
-                          calculadora_distancia=calculadora_distancia)
+    logistica = Logistica(centros=centros_distribuicao, caminhoes=caminhoes, entregas=entregas, calculadora_distancia=calculadora_distancia)
 
     alocacao = logistica.alocar_caminhoes()
 
     logistica.exibir_alocacao(alocacao)
 
     session.close()
-
 
 if __name__ == '__main__':
     init_database()

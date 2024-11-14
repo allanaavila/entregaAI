@@ -10,7 +10,7 @@ class CentroDistribuicao(Base):
     __tablename__ = 'centros_distribuicao'
 
     id = Column(Integer, primary_key=True)
-    codigo = Column(String(10), unique=True, nullable=False)  # Ex: CD-SP
+    codigo = Column(String(10), unique=True, nullable=False)
     nome = Column(String(100), nullable=False)
     endereco = Column(String(200), nullable=False)
     cidade = Column(String(100), nullable=False)
@@ -24,3 +24,6 @@ class CentroDistribuicao(Base):
 
     created_at = Column(DateTime, default=datetime.now())
     updated_at = Column(DateTime, default=datetime.now(), onupdate=datetime.now())
+
+from models.caminhao import Caminhao
+from models.entrega import Entrega
