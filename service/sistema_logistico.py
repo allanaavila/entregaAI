@@ -70,6 +70,13 @@ class Logistica:
 
     def exibir_alocacao(self, alocacao):
         for entrega, caminhao in alocacao.items():
+            centro = caminhao.centro_distribuicao
             print(
-                f"Entrega {entrega.id} alocada ao caminhão {caminhao.id} ({caminhao.centro_distribuicao.nome}) com peso {entrega.peso}kg.")
+                f"\n--- Alocação de Entrega ---"
+                f"\nCentro de Distribuição: {centro.nome} ({centro.cidade}, {centro.estado})"
+                f"\nCaminhão: ID {caminhao.id}, Placa: {caminhao.placa}, Modelo: {caminhao.modelo}, Capacidade: {caminhao.capacidade}kg"
+                f"\nEntrega: ID {entrega.id}, Peso: {entrega.peso}kg, Volume: {entrega.volume},"
+                f"\n   Destino: {entrega.endereco_entrega}, {entrega.cidade_entrega} - {entrega.estado_entrega}"
+                f"\n   Prazo: {entrega.prazo.strftime('%Y-%m-%d %H:%M')}\n"
+            )
 
