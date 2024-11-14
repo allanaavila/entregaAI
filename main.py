@@ -1,45 +1,49 @@
-from entity.caminhao import Caminhao
-from entity.entrega import Entrega
-from entity.rota import RotaGrafo
+from database.config import get_session
+from database.init_db import init_database
+from models.caminhao import Caminhao
+from models.centro_distribuicao import CentroDistribuicao
+from models.entrega import Entrega
+from repository.banco_dados import BancoDados
 from service.sistema_logistico import Logistica
+from util.calcular_distancia import CalcularDistancia
+from visual.menu_caminhoes import MenuCaminhoes
+from visual.menu_entrega import MenuEntrega
+
 
 def main():
-    # 1. Criando os centros de distribuição
-    centros = ["Belém", "Recife", "São Paulo", "Curitiba"]
+    init_database()
+    session = get_session()
 
-    # 2. Criando os caminhões com capacidades e horas de operação
-    caminhao1 = Caminhao(id=1, capacidade=5000, horas_operacao=10, centro_distribuicao="Belém")
-    caminhao2 = Caminhao(id=2, capacidade=6000, horas_operacao=8, centro_distribuicao="Recife")
-    caminhao3 = Caminhao(id=3, capacidade=7000, horas_operacao=9, centro_distribuicao="São Paulo")
-    caminhao4 = Caminhao(id=4, capacidade=8000, horas_operacao=12, centro_distribuicao="Curitiba")
+    banco_de_dados = BancoDados(session=session)
 
-    caminhoes = [caminhao1, caminhao2, caminhao3, caminhao4]
 
-    # 3. Criando as entregas com destino, prazo e peso
-    entrega1 = Entrega(destino="Recife", prazo_entrega="2024-11-20", peso=1500, prioridade=1)
-    entrega2 = Entrega(destino="São Paulo", prazo_entrega="2024-11-18", peso=3000, prioridade=2)
-    entrega3 = Entrega(destino="Curitiba", prazo_entrega="2024-11-15", peso=2000, prioridade=3)
-    entrega4 = Entrega(destino="Belém", prazo_entrega="2024-11-22", peso=2500, prioridade=1)
+    centro_sp: CentroDistribuicao = banco_de_dados.buscar_centro(codigo="CD-SP")
+    centro_pr: CentroDistribuicao = banco_de_dados.buscar_centro(codigo="CD-PR")
+    centro_pe: CentroDistribuicao = banco_de_dados.buscar_centro(codigo="CD-PE")
+    centro_pa: CentroDistribuicao = banco_de_dados.buscar_centro(codigo="CD-PA")
 
-    entregas = [entrega1, entrega2, entrega3, entrega4]
+    centros_distribuicao = banco_de_dados.listar_centros()
 
-    # 4. Criando o grafo de rotas com as distâncias entre os centros de distribuição
-    grafo = RotaGrafo()
-    grafo.adicionar_rota("Belém", "Recife", -1.4558, -48.5044, -8.0476, -34.8770)
-    grafo.adicionar_rota("Recife", "São Paulo", -8.0476, -34.8770, -23.5505, -46.6333)
-    grafo.adicionar_rota("São Paulo", "Curitiba", -23.5505, -46.6333, -25.4284, -49.2733)
-    grafo.adicionar_rota("Curitiba", "Recife", -25.4284, -49.2733, -8.0476, -34.8770)
+    menu_caminhoes = MenuCaminhoes()
+    menu_caminhoes.exibir_menu()
+    caminhoes = banco_de_dados.listar_caminhoes()
 
-    # 5. Instanciando o sistema logístico para otimização
-    logistica = Logistica(centros, caminhoes, entregas, grafo)
+    menu_entregas = MenuEntrega()
+    menu_entregas.menu_entrega()
+    entregas = banco_de_dados.listar_entregas()
 
-    # 6. Alocando os caminhões de acordo com as entregas e o centro de distribuição mais próximo
+    calculadora_distancia = CalcularDistancia()
+
+    logistica = Logistica(centros=centros_distribuicao, caminhoes=caminhoes, entregas=entregas,
+                          calculadora_distancia=calculadora_distancia)
+
     alocacao = logistica.alocar_caminhoes()
 
-    # 7. Exibindo o resultado da alocação
-    print("Alocação de Caminhões para as Entregas:")
-    for entrega, caminhao in alocacao.items():
-        print(f"Entrega para {entrega.destino} (Prazo: {entrega.prazo_entrega}, Peso: {entrega.peso}kg) - Alocada ao {caminhao}")
+    logistica.exibir_alocacao(alocacao)
 
-if __name__ == "__main__":
+    session.close()
+
+
+if __name__ == '__main__':
+    init_database()
     main()
