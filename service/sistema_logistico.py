@@ -1,3 +1,4 @@
+from database.config import get_session
 from database.init_db import logger
 from typing import List, Type
 
@@ -8,75 +9,77 @@ from util.calcular_distancia import CalcularDistancia
 
 
 class Logistica:
-    def __init__(self, centros: List[Type[CentroDistribuicao]], caminhoes: List[Type[Caminhao]], entregas: List[Type[Entrega]],
-                 calculadora_distancia: CalcularDistancia = CalcularDistancia()):
-        if not centros or not caminhoes or not entregas:
-            raise ValueError("Centros, caminhões e entregas são necessários.")
-        self.centros = centros
-        self.caminhoes = caminhoes
-        self.entregas = entregas
-        self.calculadora_distancia = calculadora_distancia
+    alocacoes = []
+
+    def __init__(self):
+        self.session = get_session()
+        self.centros = self.session.query(CentroDistribuicao).all()
+        self.caminhoes = self.session.query(Caminhao).all()
+        self.entregas = self.session.query(Entrega).all()
+        self.calculadora_distancia = CalcularDistancia()
         self.logger = logger
 
     def alocar_caminhoes(self):
-        alocacao = {}
+        """
+        Realiza a alocação das entregas para os caminhões mais adequados.
+        """
+        if not self.centros or not self.caminhoes or not self.entregas:
+            self.logger.warning("Dados insuficientes para realizar a alocação.")
+            return
 
         for entrega in self.entregas:
             melhor_rota = None
-            melhor_distancia = None
+            melhor_distancia = float('inf')
 
-            for indice, centro in enumerate(self.centros, start=1):
+            for centro in self.centros:
                 distancia = self.calculadora_distancia.calcular_distancia(
                     (centro.latitude, centro.longitude),
                     (entrega.latitude_entrega, entrega.longitude_entrega)
                 )
-
-                if indice == 1:
-                    melhor_distancia = distancia
-                    melhor_rota = centro
-                    continue
-
                 if distancia < melhor_distancia:
                     melhor_distancia = distancia
                     melhor_rota = centro
 
             if not melhor_rota:
-                self.logger.warning(f"Nenhuma rota encontrada para a entrega {entrega.id}.")
+                self.logger.warning(f"Nenhum centro adequado encontrado para a entrega {entrega.id}.")
                 continue
 
             caminhao = self.encontrar_caminhao_adequado(melhor_rota, entrega.peso)
+            if not caminhao:
+                self.logger.warning(f"Nenhum caminhão disponível no centro {melhor_rota.nome} para a entrega {entrega.id}.")
+                continue
 
-            if caminhao:
-                if caminhao.capacidade - caminhao.carga_atual < entrega.peso:
-                    self.logger.warning(
-                        f"Não há capacidade suficiente no caminhão {caminhao.id} para a entrega {entrega.id}.")
-                    continue
-
-                caminhao.adicionar_carga(entrega.peso)
-                alocacao[entrega] = caminhao
-                self.logger.info(f"Caminhão {caminhao.id} alocado para a entrega {entrega.id}.")
-            else:
+            if caminhao.capacidade - caminhao.carga_atual < entrega.peso:
                 self.logger.warning(
-                    f"Não há caminhão adequado para a entrega {entrega.id} no centro {melhor_rota.nome}.")
+                    f"Capacidade insuficiente no caminhão {caminhao.id} para a entrega {entrega.id}."
+                )
+                continue
 
-        return alocacao
+            caminhao.adicionar_carga(entrega.peso)
+            Logistica.alocacoes.append((entrega, caminhao, melhor_rota))
+            self.logger.info(f"Caminhão {caminhao.id} alocado para a entrega {entrega.id}.")
 
     def encontrar_caminhao_adequado(self, centro, peso):
-        for caminhao in self.caminhoes:
-            if caminhao.centro_distribuicao == centro and caminhao.capacidade >= peso and caminhao.pode_transportar(
-                    peso):
-                return caminhao
-        return None
+        """
+        Retorna o caminhão mais adequado para uma entrega específica em um centro de distribuição.
+        """
+        return next(
+            (caminhao for caminhao in self.caminhoes if caminhao.centro_distribuicao_id == centro.id and caminhao.capacidade >= peso),
+            None
+        )
 
-    def exibir_alocacao(self, alocacao):
-        for entrega, caminhao in alocacao.items():
-            centro = caminhao.centro_distribuicao
+    @staticmethod
+    def exibir_alocacao():
+        if not Logistica.alocacoes:
+            print("Nenhuma alocação realizada.")
+            return
+
+        for entrega, caminhao, centro in Logistica.alocacoes:
             print(
-                f"\n--- Alocação de Entrega ---"
+                f"\n--- Alocação ---"
                 f"\nCentro de Distribuição: {centro.nome} ({centro.cidade}, {centro.estado})"
-                f"\nCaminhão: ID {caminhao.id}, Placa: {caminhao.placa}, Modelo: {caminhao.modelo}, Capacidade: {caminhao.capacidade}kg"
-                f"\nEntrega: ID {entrega.id}, Peso: {entrega.peso}kg, Volume: {entrega.volume},"
-                f"\n   Destino: {entrega.endereco_entrega}, {entrega.cidade_entrega} - {entrega.estado_entrega}"
-                f"\n   Prazo: {entrega.prazo.strftime('%Y-%m-%d %H:%M')}\n"
+                f"\nCaminhão: {caminhao.modelo} - Placa: {caminhao.placa}, Capacidade: {caminhao.capacidade}kg"
+                f"\nEntrega: ID {entrega.id}, Peso: {entrega.peso}kg, Volume: {entrega.volume}, "
+                f"Prazo: {entrega.prazo.strftime('%Y-%m-%d %H:%M')}"
+                f"\nDestino: {entrega.endereco_entrega}, {entrega.cidade_entrega}, {entrega.estado_entrega}\n"
             )
-

@@ -1,8 +1,6 @@
 from database.config import get_session
 from database.init_db import init_database
-from models.caminhao import Caminhao
 from models.centro_distribuicao import CentroDistribuicao
-from models.entrega import Entrega
 from repository.banco_dados import BancoDados
 from service.sistema_logistico import Logistica
 from util.calcular_distancia import CalcularDistancia
@@ -15,7 +13,6 @@ def main():
     session = get_session()
 
     banco_de_dados = BancoDados(session=session)
-
 
     centro_sp: CentroDistribuicao = banco_de_dados.buscar_centro(codigo="CD-SP")
     centro_pr: CentroDistribuicao = banco_de_dados.buscar_centro(codigo="CD-PR")
@@ -34,12 +31,11 @@ def main():
 
     calculadora_distancia = CalcularDistancia()
 
-    logistica = Logistica(centros=centros_distribuicao, caminhoes=caminhoes, entregas=entregas,
-                          calculadora_distancia=calculadora_distancia)
+    logistica = Logistica()
 
     alocacao = logistica.alocar_caminhoes()
 
-    logistica.exibir_alocacao(alocacao)
+    logistica.exibir_alocacao()
 
     session.close()
 
