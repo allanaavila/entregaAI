@@ -3,7 +3,7 @@ from repository.banco_dados import BancoDados
 from visual.menu_caminhoes import MenuCaminhoes
 from visual.menu_centros import MenuCentrosDistribuicao
 from visual.menu_cliente import MenuCliente
-from visual.menu_entrega import MenuEntrega
+from visual.menu_entrega import MenuEntregas
 
 
 class MenuPrincipal:
@@ -15,19 +15,19 @@ class MenuPrincipal:
     def exibir_menu_principal(self):
         while True:
             print("\n--- Menu Principal ---")
-            print("1. Menu Centro de Distribuição")
-            print("2. Menu Entregas")
-            print("3. Menu Caminhões")
-            print("4. Menu Clientes")
+            print("1. Gerenciar Centros de Distribuição")
+            print("2. Gerenciar Entregas")
+            print("3. Gerenciar Caminhões")
+            print("4. Gerenciar Clientes")
             print("5. Sair")
             opcao = input("Escolha uma opção: ")
 
             if opcao == "1":
                 menu_centros = MenuCentrosDistribuicao()
-                menu_centros.menu_centros_distribuicao()
+                menu_centros.menu_principal()
             elif opcao == "2":
-                menu_entregas = MenuEntrega()
-                menu_entregas.menu_entrega()
+                menu_entregas = MenuEntregas()
+                menu_entregas.menu_principal()
             elif opcao == "3":
                 menu_caminhoes = MenuCaminhoes()
                 menu_caminhoes.exibir_menu()

@@ -2,10 +2,6 @@ from database.config import get_session
 from database.init_db import init_database
 from models.centro_distribuicao import CentroDistribuicao
 from repository.banco_dados import BancoDados
-from service.sistema_logistico import Logistica
-from util.calcular_distancia import CalcularDistancia
-from visual.menu_caminhoes import MenuCaminhoes
-from visual.menu_entrega import MenuEntrega
 from visual.menu_principal import MenuPrincipal
 
 
@@ -25,15 +21,6 @@ def main():
 
     menu_principal = MenuPrincipal()
     menu_principal.exibir_menu_principal()
-
-
-    calculadora_distancia = CalcularDistancia()
-
-    logistica = Logistica()
-
-    alocacao = logistica.alocar_caminhoes()
-
-    logistica.exibir_alocacao()
 
     session.close()
 

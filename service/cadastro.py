@@ -89,6 +89,7 @@ class Cadastro:
         print("Cliente cadastrado com sucesso!")
         session.close()
 
+
     def adicionar_entrega(self):
         session = get_session()
         clientes = session.query(Cliente).all()

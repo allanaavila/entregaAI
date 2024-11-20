@@ -2,30 +2,34 @@ from datetime import datetime
 
 from database.config import get_session
 from models.entrega import Entrega
-from repository.banco_dados import BancoDados, ErroBancoDados
+from repository.banco_dados import BancoDados
 
 
-class MenuEntrega:
-
+class MenuEntregas:
     def __init__(self):
         self.session = get_session()
         self.banco_de_dados = BancoDados(session=self.session)
 
-    def menu_entrega(self):
+    def menu_principal(self):
         while True:
             print("\n--- Menu de Entregas ---")
             print("1. Cadastrar Entrega")
-            print("2. Listar todas as Entregas")
-            print("3. Cancelar Entrega")
-            print("4. Voltar menu principal")
+            print("2. Listar Entregas")
+            print("3. Atualizar Status de Entrega")
+            print("4. Remover Entrega")
+            print("5. Voltar ao menu principal")
             opcao = input("Escolha uma opção: ")
 
             if opcao == "1":
                 self.cadastrar_entrega()
             elif opcao == "2":
                 self.listar_entregas()
+            elif opcao == "3":
+                self.atualizar_entrega()
             elif opcao == "4":
-                print("Encerrando o programa...")
+                self.remover_entrega()
+            elif opcao == "5":
+                print("Retornando ao menu principal...")
                 break
             else:
                 print("Opção inválida! Tente novamente.")
@@ -35,14 +39,14 @@ class MenuEntrega:
         codigo = input("Digite o código da entrega: ")
         peso = float(input("Digite o peso da entrega (em kg): "))
         volume = float(input("Digite o volume da entrega: "))
-        prazo_str = input("Digite o prazo da entrega (formato: YYYY-MM-DD HH:MM): ")
+        prazo_str = input("Digite o prazo de entrega (YYYY-MM-DD HH:MM): ")
         prazo = datetime.strptime(prazo_str, "%Y-%m-%d %H:%M")
         endereco = input("Digite o endereço de entrega: ")
         cidade = input("Digite a cidade de entrega: ")
         estado = input("Digite o estado de entrega: ")
         cliente_id = int(input("Digite o ID do cliente: "))
-        latitude = float(input("Digite a latitude da entrega: "))
-        longitude = float(input("Digite a longitude da entrega: "))
+        latitude = float(input("Digite a latitude: "))
+        longitude = float(input("Digite a longitude: "))
 
         entrega = Entrega(
             codigo=codigo,
@@ -52,38 +56,47 @@ class MenuEntrega:
             endereco_entrega=endereco,
             cidade_entrega=cidade,
             estado_entrega=estado,
-            cliente_id=cliente_id,
             latitude_entrega=latitude,
-            longitude_entrega=longitude
+            longitude_entrega=longitude,
+            cliente_id=cliente_id
         )
 
         self.session.add(entrega)
         self.session.commit()
         print("Entrega cadastrada com sucesso!")
-        self.session.close()
 
     def listar_entregas(self):
-        session = get_session()
-        banco_de_dados = BancoDados(session=session)
-
-        print("\n--- Listar Entregas ---")
-        entregas = banco_de_dados.listar_entregas()
-
+        print("\n--- Lista de Entregas ---")
+        entregas = self.session.query(Entrega).all()
         if not entregas:
             print("Nenhuma entrega cadastrada.")
         else:
             for entrega in entregas:
                 print(
-                    f"\n--- Detalhes da Entrega ---\n"
-                    f"ID da Entrega: {entrega.id}\n"
-                    f"Código da Entrega: {entrega.codigo}\n"
-                    f"Peso: {entrega.peso:.2f} kg\n"
-                    f"Volume: {entrega.volume:.2f} m³\n"
-                    f"Prazo de Entrega: {entrega.prazo.strftime('%d/%m/%Y %H:%M')}\n"
-                    f"Endereço: {entrega.endereco_entrega}\n"
-                    f"Cidade: {entrega.cidade_entrega}\n"
-                    f"Estado: {entrega.estado_entrega}\n"
-                    f"Localização: Latitude {entrega.latitude_entrega}, Longitude {entrega.longitude_entrega}\n"
+                    f"Código: {entrega.codigo} | Peso: {entrega.peso} kg | Prazo: {entrega.prazo} | Status: {entrega.status}"
                 )
 
-        session.close()
+    def atualizar_entrega(self):
+        self.listar_entregas()
+        id_entrega = int(input("Digite o ID da entrega que deseja atualizar: "))
+        entrega = self.session.query(Entrega).get(id_entrega)
+        if not entrega:
+            print("Entrega não encontrada.")
+            return
+
+        novo_status = input(f"Novo status ({entrega.status}): ")
+        entrega.status = novo_status or entrega.status
+        self.session.commit()
+        print("Status da entrega atualizado com sucesso!")
+
+    def remover_entrega(self):
+        self.listar_entregas()
+        id_entrega = int(input("Digite o ID da entrega que deseja remover: "))
+        entrega = self.session.query(Entrega).get(id_entrega)
+        if not entrega:
+            print("Entrega não encontrada.")
+            return
+
+        self.session.delete(entrega)
+        self.session.commit()
+        print("Entrega removida com sucesso!")
