@@ -53,7 +53,7 @@ class MenuCaminhoes:
             centro_distribuicao_id=centro_selecionado.id
         )
 
-        self.session.add_all(caminhao)
+        self.session.add(caminhao)
         self.session.commit()
         print("Caminhão cadastrado com sucesso!")
         self.session.close()
