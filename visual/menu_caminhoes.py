@@ -1,8 +1,7 @@
 
 from database.config import get_session
 from models.caminhao import Caminhao
-from repository.banco_dados import BancoDados
-
+from repository.banco_dados import BancoDados, ErroBancoDados
 
 
 class MenuCaminhoes:
@@ -72,6 +71,30 @@ class MenuCaminhoes:
                 print(f"ID: {caminhao.id}, Placa: {caminhao.placa}, Modelo: {caminhao.modelo}, "
                       f"Capacidade: {caminhao.capacidade} kg, Velocidade Média: {caminhao.velocidade_media} km/h, "
                       f"Custo por Km: R${caminhao.custo_km}, Centro de Distribuição ID: {caminhao.centro_distribuicao_id}")
+
+    def remover_caminhao(self):
+        print("\n--- Remover Caminhão ---")
+        caminhoes = self.banco_de_dados.listar_caminhoes()
+
+        if not caminhoes:
+            print("Nenhum caminhão cadastrado.")
+            return
+
+        for i, caminhao in enumerate(caminhoes, start=1):
+            print(f"{i}. Modelo: {caminhao.modelo} - Placa: {caminhao.placa}, Capacidade: {caminhao.capacidade} kg")
+
+        placa = input("Digite a placa do caminhão a ser removido: ").strip()
+
+        caminhao_remover = next((caminhao for caminhao in caminhoes if caminhao.placa == placa), None)
+
+        if not caminhao_remover:
+            print(f"Nenhum caminhão encontrado com a placa {placa}.")
+            return
+        try:
+            self.banco_de_dados.remover_caminhao(caminhao_remover.id)
+            print(f"Caminhão {caminhao_remover.modelo} com a placa {caminhao_remover.placa} removido com sucesso!")
+        except ErroBancoDados as e:
+            print(f"Erro ao remover caminhão: {str(e)}")
 
     def __del__(self):
         self.session.close()

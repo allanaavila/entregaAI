@@ -158,6 +158,26 @@ class BancoDados:
         except ErroBancoDados as e:
             raise ErroBancoDados(f"Falha ao atualizar o status do caminhão: {str(e)}")
 
+    def remover_caminhao(self, caminhao_id: str) -> None:
+        """
+        Remove um caminhão do banco de dados pelo ID.
+        """
+        try:
+            self.cursor.execute("SELECT id FROM caminhao WHERE id = ?", (caminhao_id,))
+            row = self.cursor.fetchone()
+
+            if row is None:
+                raise ValueError(f"Caminhão com ID {caminhao_id} não encontrado.")
+            with self.transacao() as cursor:
+                cursor.execute("DELETE FROM caminhao WHERE id = ?", (caminhao_id,))
+                logger.info(f"Caminhão com ID {caminhao_id} removido com sucesso.")
+        except ValueError as e:
+            logger.error(str(e))
+            raise ErroBancoDados(str(e))
+        except sqlite3.Error as e:
+            logger.error(f"Falha ao remover caminhão: {str(e)}")
+            raise ErroBancoDados(f"Falha ao remover caminhão: {str(e)}")
+
 
     def listar_clientes(self) -> List[Cliente]:
         """
