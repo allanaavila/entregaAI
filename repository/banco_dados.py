@@ -6,6 +6,7 @@ from sqlalchemy.orm import Session
 
 from models.centro_distribuicao import CentroDistribuicao
 from models.caminhao import Caminhao
+from models.cliente import Cliente
 from models.entrega import Entrega
 from service.sistema_logistico import logger
 
@@ -156,6 +157,56 @@ class BancoDados:
             logger.info(f"Status do caminhão {caminhao_id} atualizado para '{status}'.")
         except ErroBancoDados as e:
             raise ErroBancoDados(f"Falha ao atualizar o status do caminhão: {str(e)}")
+
+
+    def listar_clientes(self) -> List[Cliente]:
+        """
+        Lista todos os clientes cadastrados no banco de dados.
+        """
+        try:
+            self.cursor.execute("""
+                SELECT id, nome, cnpj, endereco, cidade, estado, latitude, longitude 
+                FROM cliente
+            """)
+            rows = self.cursor.fetchall()
+            clientes = []
+            for row in rows:
+                cliente = Cliente(
+                    id=row[0],
+                    nome=row[1],
+                    cnpj=row[2],
+                    endereco=row[3],
+                    cidade=row[4],
+                    estado=row[5],
+                    latitude=row[6],
+                    longitude=row[7]
+                )
+                clientes.append(cliente)
+            return clientes
+        except sqlite3.Error as e:
+            logger.error(f"Falha ao listar clientes: {str(e)}")
+            raise ErroBancoDados(f"Falha ao listar clientes: {str(e)}")
+
+    def remover_cliente(self, cliente_id: int) -> None:
+        """
+        Remove um cliente do banco de dados pelo ID.
+        """
+        try:
+            self.cursor.execute("SELECT id FROM cliente WHERE id = ?", (cliente_id,))
+            row = self.cursor.fetchone()
+
+            if row is None:
+                raise ValueError(f"Cliente com ID {cliente_id} não encontrado.")
+            with self.transacao() as cursor:
+                cursor.execute("DELETE FROM cliente WHERE id = ?", (cliente_id,))
+                logger.info(f"Cliente com ID {cliente_id} removido com sucesso.")
+        except ValueError as e:
+            logger.error(str(e))
+            raise ErroBancoDados(str(e))
+        except sqlite3.Error as e:
+            logger.error(f"Falha ao remover cliente: {str(e)}")
+            raise ErroBancoDados(f"Falha ao remover cliente: {str(e)}")
+
 
     def __enter__(self):
         return self

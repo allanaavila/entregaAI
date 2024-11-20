@@ -16,7 +16,8 @@ class MenuCaminhoes:
             print("\n--- Menu de Caminhões ---")
             print("1. Cadastrar Caminhão")
             print("2. Listar Caminhões")
-            print("3. Voltar ao Menu Principal")
+            print("3. Remover Caminhão")
+            print("4. Voltar ao menu principal")
             opcao = input("Escolha uma opção: ")
 
             if opcao == "1":
@@ -24,6 +25,8 @@ class MenuCaminhoes:
             elif opcao == "2":
                 self.listar_caminhoes()
             elif opcao == "3":
+                self.remover_caminhao()
+            elif opcao == "4":
                 break
             else:
                 print("Opção inválida! Tente novamente.")
