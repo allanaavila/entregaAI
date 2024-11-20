@@ -79,20 +79,25 @@ class MenuCaminhoes:
         if not caminhoes:
             print("Nenhum caminhão cadastrado.")
             return
-
         for i, caminhao in enumerate(caminhoes, start=1):
-            print(f"{i}. Modelo: {caminhao.modelo} - Placa: {caminhao.placa}, Capacidade: {caminhao.capacidade} kg")
+            print(
+                f"{i}. ID: {caminhao.id} - Modelo: {caminhao.modelo} - Placa: {caminhao.placa}, Capacidade: {caminhao.capacidade} kg")
 
-        placa = input("Digite a placa do caminhão a ser removido: ").strip()
+        try:
+            caminhao_id = int(input("Digite o ID do caminhão a ser removido: ").strip())
+        except ValueError:
+            print("Por favor, insira um ID válido.")
+            return
 
-        caminhao_remover = next((caminhao for caminhao in caminhoes if caminhao.placa == placa), None)
+        caminhao_remover = next((caminhao for caminhao in caminhoes if caminhao.id == caminhao_id), None)
 
         if not caminhao_remover:
-            print(f"Nenhum caminhão encontrado com a placa {placa}.")
+            print(f"Nenhum caminhão encontrado com o ID {caminhao_id}.")
             return
+
         try:
             self.banco_de_dados.remover_caminhao(caminhao_remover.id)
-            print(f"Caminhão {caminhao_remover.modelo} com a placa {caminhao_remover.placa} removido com sucesso!")
+            print(f"Caminhão com ID {caminhao_remover.id} removido com sucesso!")
         except ErroBancoDados as e:
             print(f"Erro ao remover caminhão: {str(e)}")
 

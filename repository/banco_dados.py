@@ -60,6 +60,7 @@ class BancoDados:
         except ErroBancoDados as e:
             raise ErroBancoDados(f"Falha ao criar tabelas: {str(e)}")
 
+
     def salvar_centro(self, centro: CentroDistribuicao) -> None:
         try:
             with self.transacao() as cursor:
@@ -73,12 +74,14 @@ class BancoDados:
             logger.error(f"Falha ao salvar centro de distribuição '{centro.nome}': {str(e)}")
             raise ErroBancoDados(f"Falha ao salvar centro de distribuição: {str(e)}")
 
+
     def buscar_centro(self, codigo: str) -> Optional[CentroDistribuicao]:
         try:
             centro = self.session.query(CentroDistribuicao).filter_by(codigo=codigo).first()
             return centro
         except Exception as e:
             raise ErroBancoDados(f"Falha ao buscar centro de distribuição: {str(e)}")
+
 
     def listar_caminhoes(self) -> list[Type[Caminhao]]:
         try:
@@ -87,12 +90,15 @@ class BancoDados:
         except Exception as e:
             raise ErroBancoDados(f"Falha ao listar caminhões: {str(e)}")
 
+
     def listar_centros(self) -> list[Type[CentroDistribuicao]]:
         try:
             centros_distribuicao = self.session.query(CentroDistribuicao).all()
             return centros_distribuicao
         except Exception as e:
             raise ErroBancoDados(f"Falha ao listar caminhões: {str(e)}")
+
+
 
     def listar_entregas(self) -> list[Type[Entrega]]:
         try:
@@ -101,11 +107,15 @@ class BancoDados:
         except Exception as e:
             raise ErroBancoDados(f"Falha ao listar caminhões: {str(e)}")
 
+
+
     def salvar_caminhao(self, caminhao: Caminhao, session: Session) -> None:
         try:
             self.session.add(caminhao)
         except Exception as e:
             raise ErroBancoDados(f"Falha ao salvar caminhão: {str(e)}")
+
+
 
     def buscar_caminhao_disponivel(self, capacidade_necessaria: int) -> List[Caminhao]:
         try:
@@ -136,6 +146,7 @@ class BancoDados:
         except sqlite3.Error as e:
             raise ErroBancoDados(f"Falha ao buscar caminhões disponíveis: {str(e)}")
 
+
     def atualizar_status_caminhao(self, caminhao_id: str, status: str) -> None:
         status_validos = {'disponivel', 'em_rota', 'manutencao'}
         if status not in status_validos:
@@ -158,7 +169,7 @@ class BancoDados:
         except ErroBancoDados as e:
             raise ErroBancoDados(f"Falha ao atualizar o status do caminhão: {str(e)}")
 
-    def remover_caminhao(self, caminhao_id: str) -> None:
+    def remover_caminhao(self, caminhao_id: int) -> None:
         """
         Remove um caminhão do banco de dados pelo ID.
         """

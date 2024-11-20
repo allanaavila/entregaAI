@@ -6,6 +6,7 @@ from service.sistema_logistico import Logistica
 from util.calcular_distancia import CalcularDistancia
 from visual.menu_caminhoes import MenuCaminhoes
 from visual.menu_entrega import MenuEntrega
+from visual.menu_principal import MenuPrincipal
 
 
 def main():
@@ -21,13 +22,10 @@ def main():
 
     centros_distribuicao = banco_de_dados.listar_centros()
 
-    menu_caminhoes = MenuCaminhoes()
-    menu_caminhoes.exibir_menu()
-    caminhoes = banco_de_dados.listar_caminhoes()
 
-    menu_entregas = MenuEntrega()
-    menu_entregas.menu_entrega()
-    entregas = banco_de_dados.listar_entregas()
+    menu_principal = MenuPrincipal()
+    menu_principal.exibir_menu_principal()
+
 
     calculadora_distancia = CalcularDistancia()
 

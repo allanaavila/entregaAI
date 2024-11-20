@@ -2,7 +2,7 @@ from datetime import datetime
 
 from database.config import get_session
 from models.entrega import Entrega
-from repository.banco_dados import BancoDados
+from repository.banco_dados import BancoDados, ErroBancoDados
 
 
 class MenuEntrega:
@@ -16,23 +16,21 @@ class MenuEntrega:
             print("\n--- Menu de Entregas ---")
             print("1. Cadastrar Entrega")
             print("2. Listar todas as Entregas")
-            print("3. Sair")
+            print("3. Cancelar Entrega")
+            print("4. Voltar menu principal")
             opcao = input("Escolha uma opção: ")
 
             if opcao == "1":
                 self.cadastrar_entrega()
             elif opcao == "2":
                 self.listar_entregas()
-            elif opcao == "3":
+            elif opcao == "4":
                 print("Encerrando o programa...")
                 break
             else:
                 print("Opção inválida! Tente novamente.")
 
     def cadastrar_entrega(self):
-        session = get_session()
-        banco_de_dados = BancoDados(session=session)
-
         print("\n--- Cadastrar Entrega ---")
         codigo = input("Digite o código da entrega: ")
         peso = float(input("Digite o peso da entrega (em kg): "))
@@ -59,10 +57,10 @@ class MenuEntrega:
             longitude_entrega=longitude
         )
 
-        session.add(entrega)
-        session.commit()
+        self.session.add(entrega)
+        self.session.commit()
         print("Entrega cadastrada com sucesso!")
-        session.close()
+        self.session.close()
 
     def listar_entregas(self):
         session = get_session()
