@@ -68,9 +68,11 @@ class Cadastro:
         estado = input("Digite o estado do cliente: ")
 
         coordenadas = obter_coordenadas_opencage(endereco, cidade, estado)
-        if "erro" in coordenadas:
+        if type(coordenadas) == dict:
             print(f"Erro ao obter localização: {coordenadas['erro']}")
             return
+        else:
+            latitude, longitude = coordenadas
 
         cliente = Cliente(
             nome=nome,
@@ -78,8 +80,8 @@ class Cadastro:
             endereco=endereco,
             cidade=cidade,
             estado=estado,
-            latitude=coordenadas[0],
-            longitude=coordenadas[1]
+            latitude=latitude,
+            longitude=longitude
         )
 
         session.add(cliente)
