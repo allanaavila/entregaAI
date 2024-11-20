@@ -25,6 +25,7 @@ class BancoDados:
             logger.error(f"Falha ao inicializar o banco de dados: {str(e)}")
             raise ErroBancoDados(f"Falha ao inicializar o banco de dados: {str(e)}")
 
+
     @contextmanager
     def transacao(self):
         try:
@@ -33,6 +34,7 @@ class BancoDados:
         except sqlite3.Error as e:
             self.conn.rollback()
             raise ErroBancoDados(f"Falha na transação: {str(e)}")
+
 
     def criar_tabelas(self) -> None:
         try:
@@ -82,14 +84,12 @@ class BancoDados:
         except Exception as e:
             raise ErroBancoDados(f"Falha ao buscar centro de distribuição: {str(e)}")
 
-
     def listar_caminhoes(self) -> list[Type[Caminhao]]:
         try:
             caminhoes = self.session.query(Caminhao).all()
             return caminhoes
         except Exception as e:
             raise ErroBancoDados(f"Falha ao listar caminhões: {str(e)}")
-
 
     def listar_centros(self) -> list[Type[CentroDistribuicao]]:
         try:
@@ -169,25 +169,22 @@ class BancoDados:
         except ErroBancoDados as e:
             raise ErroBancoDados(f"Falha ao atualizar o status do caminhão: {str(e)}")
 
-    def remover_caminhao(self, caminhao_id: int) -> None:
-        """
-        Remove um caminhão do banco de dados pelo ID.
-        """
-        try:
-            self.cursor.execute("SELECT id FROM caminhao WHERE id = ?", (caminhao_id,))
-            row = self.cursor.fetchone()
 
-            if row is None:
+    def remover_caminhao(self, caminhao_id: int) -> None:
+        try:
+            print(f"Buscando caminhão com ID: {caminhao_id}")
+            caminhao = self.session.query(Caminhao).filter(Caminhao.id == caminhao_id).first()
+
+            if caminhao is None:
                 raise ValueError(f"Caminhão com ID {caminhao_id} não encontrado.")
-            with self.transacao() as cursor:
-                cursor.execute("DELETE FROM caminhao WHERE id = ?", (caminhao_id,))
-                logger.info(f"Caminhão com ID {caminhao_id} removido com sucesso.")
+
+            print(f"Removendo caminhão com ID: {caminhao.id}")
+            self.session.delete(caminhao)
+            self.session.commit()
         except ValueError as e:
-            logger.error(str(e))
-            raise ErroBancoDados(str(e))
-        except sqlite3.Error as e:
-            logger.error(f"Falha ao remover caminhão: {str(e)}")
-            raise ErroBancoDados(f"Falha ao remover caminhão: {str(e)}")
+            print(str(e))
+        except Exception as e:
+            print(f"Erro ao remover caminhão: {str(e)}")
 
 
     def listar_clientes(self) -> List[Cliente]:

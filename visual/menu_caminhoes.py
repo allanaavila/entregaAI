@@ -60,6 +60,7 @@ class MenuCaminhoes:
         print("Caminhão cadastrado com sucesso!")
         self.session.close()
 
+
     def listar_caminhoes(self):
         print("\n--- Listar Caminhões ---")
         caminhoes = self.banco_de_dados.listar_caminhoes()
@@ -72,32 +73,31 @@ class MenuCaminhoes:
                       f"Capacidade: {caminhao.capacidade} kg, Velocidade Média: {caminhao.velocidade_media} km/h, "
                       f"Custo por Km: R${caminhao.custo_km}, Centro de Distribuição ID: {caminhao.centro_distribuicao_id}")
 
+
     def remover_caminhao(self):
         print("\n--- Remover Caminhão ---")
+
         caminhoes = self.banco_de_dados.listar_caminhoes()
 
         if not caminhoes:
             print("Nenhum caminhão cadastrado.")
             return
+
         for i, caminhao in enumerate(caminhoes, start=1):
             print(
                 f"{i}. ID: {caminhao.id} - Modelo: {caminhao.modelo} - Placa: {caminhao.placa}, Capacidade: {caminhao.capacidade} kg")
 
-        try:
-            caminhao_id = int(input("Digite o ID do caminhão a ser removido: ").strip())
-        except ValueError:
-            print("Por favor, insira um ID válido.")
-            return
+        caminhao_id = input("Digite o ID do caminhão a ser removido: ").strip()
 
-        caminhao_remover = next((caminhao for caminhao in caminhoes if caminhao.id == caminhao_id), None)
+        caminhao_remover = next((caminhao for caminhao in caminhoes if str(caminhao.id) == caminhao_id), None)
 
         if not caminhao_remover:
             print(f"Nenhum caminhão encontrado com o ID {caminhao_id}.")
             return
 
         try:
-            self.banco_de_dados.remover_caminhao(caminhao_remover.id)
-            print(f"Caminhão com ID {caminhao_remover.id} removido com sucesso!")
+            self.banco_de_dados.remover_caminhao(caminhao_id)
+            print(f"Caminhão com ID {caminhao_id} removido com sucesso!")
         except ErroBancoDados as e:
             print(f"Erro ao remover caminhão: {str(e)}")
 
