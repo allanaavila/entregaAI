@@ -11,7 +11,7 @@ from util.validar_cnpj import validar_cnpj
 
 
 class Cadastro:
-    def __init__(self: Caminhao, Entrega, Cliente):
+    def  __init__(self: Caminhao, Entrega, Cliente):
         self.caminhao = caminhao
         self.entrega = entrega
         self.cliente = cliente

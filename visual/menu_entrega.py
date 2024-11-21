@@ -1,68 +1,85 @@
-from datetime import datetime
+from datetime import datetime, timedelta
 
 from database.config import get_session
 from models.entrega import Entrega
 from repository.banco_dados import BancoDados
+from service.sistema_logistico import Logistica
 
 
 class MenuEntregas:
     def __init__(self):
         self.session = get_session()
         self.banco_de_dados = BancoDados(session=self.session)
+        self.logistica = Logistica()
 
     def menu_principal(self):
         while True:
             print("\n--- Menu de Entregas ---")
             print("1. Cadastrar Entrega")
-            print("2. Listar Entregas")
-            print("3. Atualizar Status de Entrega")
-            print("4. Remover Entrega")
-            print("5. Voltar ao menu principal")
+            print("2. Alocar Entregas")
+            print("3. Listar Entregas")
+            print("4. Listar Alocações das Entregas")
+            print("5. Atualizar Status de Entrega")
+            print("6. Cancelar Entrega")
+            print("7. Voltar ao menu principal")
             opcao = input("Escolha uma opção: ")
 
             if opcao == "1":
                 self.cadastrar_entrega()
             elif opcao == "2":
-                self.listar_entregas()
+                self.alocar_entregas()
             elif opcao == "3":
-                self.atualizar_entrega()
+                self.listar_entregas()
             elif opcao == "4":
-                self.remover_entrega()
+                self.exibir_alocacoes()
             elif opcao == "5":
+                self.atualizar_entrega()
+            elif opcao == "6":
+                self.remover_entrega()
+            elif opcao == "7":
                 print("Retornando ao menu principal...")
                 break
             else:
                 print("Opção inválida! Tente novamente.")
+
+
+    def alocar_entregas(self):
+        self.logistica.alocar_caminhoes()
 
     def cadastrar_entrega(self):
         print("\n--- Cadastrar Entrega ---")
         codigo = input("Digite o código da entrega: ")
         peso = float(input("Digite o peso da entrega (em kg): "))
         volume = float(input("Digite o volume da entrega: "))
-        prazo_str = input("Digite o prazo de entrega (YYYY-MM-DD HH:MM): ")
-        prazo = datetime.strptime(prazo_str, "%Y-%m-%d %H:%M")
-        endereco = input("Digite o endereço de entrega: ")
-        cidade = input("Digite a cidade de entrega: ")
-        estado = input("Digite o estado de entrega: ")
+        prazo = datetime.now() + timedelta(days=int(input("Digite o prazo de entrega (em dias): ")))
+        clientes = self.banco_de_dados.listar_clientes()
+        print("\n --- Clientes disponíveis ---\n")
+        for cliente_cadastrado in clientes:
+            print(f"{cliente_cadastrado.id}: {cliente_cadastrado.nome} | "
+                  f"Endereço: {cliente_cadastrado.endereco} - {cliente_cadastrado.cidade}, {cliente_cadastrado.estado}")
+
         cliente_id = int(input("Digite o ID do cliente: "))
-        latitude = float(input("Digite a latitude: "))
-        longitude = float(input("Digite a longitude: "))
+        cliente = self.banco_de_dados.buscar_cliente_por_id(cliente_id)
+        if not cliente:
+            print(f"Cliente com o id '{cliente_id} não encontrado no banco de dados.")
+            return
 
         entrega = Entrega(
             codigo=codigo,
             peso=peso,
             volume=volume,
             prazo=prazo,
-            endereco_entrega=endereco,
-            cidade_entrega=cidade,
-            estado_entrega=estado,
-            latitude_entrega=latitude,
-            longitude_entrega=longitude,
+            endereco_entrega=cliente.endereco,
+            cidade_entrega=cliente.cidade,
+            estado_entrega=cliente.estado,
+            latitude_entrega=cliente.latitude,
+            longitude_entrega=cliente.longitude,
             cliente_id=cliente_id
         )
 
         self.session.add(entrega)
         self.session.commit()
+        self.logistica.alocar_caminhoes()
         print("Entrega cadastrada com sucesso!")
 
     def listar_entregas(self):
@@ -72,8 +89,10 @@ class MenuEntregas:
             print("Nenhuma entrega cadastrada.")
         else:
             for entrega in entregas:
+                status = f"{entrega.status}".replace("StatusEntrega.", "").title()
+                prazo = self.__formatar_data(f"{entrega.prazo}")
                 print(
-                    f"Código: {entrega.codigo} | Peso: {entrega.peso} kg | Prazo: {entrega.prazo} | Status: {entrega.status}"
+                    f"Código: {entrega.codigo} | Peso: {entrega.peso} kg | Prazo: {prazo} | Status: {status}"
                 )
 
     def atualizar_entrega(self):
@@ -100,3 +119,28 @@ class MenuEntregas:
         self.session.delete(entrega)
         self.session.commit()
         print("Entrega removida com sucesso!")
+
+    def exibir_alocacoes(self):
+        rotas = self.banco_de_dados.listar_rotas()
+        if rotas.__len__() == 0:
+            print("Não há entregas alocadas para exibir")
+            return
+        print("\n --- Entregas alocadas ---")
+
+        for rota in rotas:
+            caminhao = self.banco_de_dados.buscar_caminhao_por_id(rota.entrega_id)
+            centro_distribuicao = self.banco_de_dados.buscar_centro_por_id(caminhao.centro_distribuicao_id)
+            entrega = self.banco_de_dados.buscar_entrega_por_id(rota.entrega_id)
+            prazo = entrega.prazo.strftime("%d/%m/%Y %H:%M")
+            print(f"ID: {rota.entrega_id}"
+                  f" | Centro responsável: {centro_distribuicao.nome}"
+                  f" | Caminhão alocado: {caminhao.modelo} - {caminhao.placa}"
+                  f" | Distância total: {rota.distancia_total:.2f} | Custo total: R$ {rota.custo_total:.2f}"
+                  f" | Prazo: {prazo}")
+
+
+    @staticmethod
+    def __formatar_data(string_data: str) -> str:
+        date_object = datetime.strptime(string_data, "%Y-%m-%d %H:%M:%S.%f")
+        return date_object.strftime("%d/%m/%Y %H:%M")
+

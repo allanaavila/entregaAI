@@ -5,7 +5,10 @@ from typing import List, Type
 from models.caminhao import Caminhao
 from models.centro_distribuicao import CentroDistribuicao
 from models.entrega import Entrega
+from models.rota import Rota
+from models.models import StatusEntrega
 from util.calcular_distancia import CalcularDistancia
+from datetime import datetime, timedelta
 
 
 class Logistica:
@@ -28,6 +31,8 @@ class Logistica:
             return
 
         for entrega in self.entregas:
+            if entrega.centro_distribuicao_id:
+                continue
             melhor_rota = None
             melhor_distancia = float('inf')
 
@@ -56,6 +61,16 @@ class Logistica:
                 continue
 
             caminhao.adicionar_carga(entrega.peso)
+            self.session.add(caminhao)
+
+            rota:Rota = self.gerar_rota(melhor_distancia, caminhao, entrega)
+
+            self.session.add(rota)
+            entrega.centro_distribuicao_id = caminhao.centro_distribuicao_id
+            entrega.status = StatusEntrega.ALOCADA
+
+            self.session.commit()
+
             Logistica.alocacoes.append((entrega, caminhao, melhor_rota))
             self.logger.info(f"Caminhão {caminhao.id} alocado para a entrega {entrega.id}.")
 
@@ -66,6 +81,20 @@ class Logistica:
         return next(
             (caminhao for caminhao in self.caminhoes if caminhao.centro_distribuicao_id == centro.id and caminhao.capacidade >= peso),
             None
+        )
+
+    def gerar_rota(self, distancia: float, caminhao: Caminhao, entrega: Entrega) -> Rota:
+        custo_total = distancia * caminhao.custo_km
+        data_inicio = datetime.now()
+        tempo_total = distancia / caminhao.velocidade_media
+        data_fim = data_inicio + timedelta(hours=tempo_total)
+
+        return Rota(
+            data_inicio=data_inicio,
+            custo_total=custo_total,
+            caminhao_id=caminhao.id,
+            entrega_id=entrega.id,
+            distancia_total=distancia
         )
 
     @staticmethod

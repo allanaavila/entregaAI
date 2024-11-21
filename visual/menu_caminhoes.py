@@ -40,11 +40,14 @@ class MenuCaminhoes:
 
         centros_distribuicao = self.banco_de_dados.listar_centros()
         print("\nCentros de Distribuição disponíveis:")
-        for i, centro in enumerate(centros_distribuicao, start=1):
-            print(f"{i}. {centro.nome} - {centro.cidade}, {centro.estado}")
+        for centro in centros_distribuicao:
+            print(f"{centro.id}. {centro.nome} - {centro.cidade}, {centro.estado}")
         centro_id = int(input("Escolha o centro de distribuição para o caminhão (número): "))
 
-        centro_selecionado = centros_distribuicao[centro_id - 1]
+        centro_selecionado = self.banco_de_dados.buscar_centro_por_id(centro_id)
+
+        if not centro_selecionado:
+            print(f"Centro com o id '{centro_id}' não encontrado no banco de dados.")
 
         caminhao = Caminhao(
             placa=placa,
@@ -52,7 +55,7 @@ class MenuCaminhoes:
             capacidade=capacidade,
             velocidade_media=velocidade_media,
             custo_km=custo_km,
-            centro_distribuicao_id=centro_selecionado.id
+            centro_distribuicao_id=centro_id
         )
 
         self.session.add(caminhao)

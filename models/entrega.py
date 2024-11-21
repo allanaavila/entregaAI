@@ -29,7 +29,7 @@ class Entrega(Base):
     centro_distribuicao_id = Column(Integer, ForeignKey('centros_distribuicao.id'))
     centro_distribuicao = relationship("CentroDistribuicao", back_populates="entregas")
 
-    rotas = relationship("Rota", secondary=entrega_rota, back_populates="entregas")
+    rotas = relationship("Rota", secondary=entrega_rota, back_populates="entrega")
 
     created_at = Column(DateTime, default=datetime.now())
     updated_at = Column(DateTime, default=datetime.now(), onupdate=datetime.now())
