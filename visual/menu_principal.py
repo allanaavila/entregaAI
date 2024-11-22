@@ -14,13 +14,16 @@ class MenuPrincipal:
 
     def exibir_menu_principal(self):
         while True:
-            print("\n--- Menu Principal ---")
-            print("1. Gerenciar Centros de Distribuição")
-            print("2. Gerenciar Entregas")
-            print("3. Gerenciar Caminhões")
-            print("4. Gerenciar Clientes")
-            print("5. Sair")
-            opcao = input("Escolha uma opção: ")
+            print("\n" + "=" * 60)
+            print("                 🌟 Menu Principal 🌟")
+            print("=" * 60)
+            print("1️⃣  Gerenciar Centros de Distribuição")
+            print("2️⃣  Gerenciar Entregas")
+            print("3️⃣  Gerenciar Caminhões")
+            print("4️⃣  Gerenciar Clientes")
+            print("5️⃣  🚪 Sair do Sistema")
+            print("=" * 60)
+            opcao = input("🔹 Escolha uma opção: ")
 
             if opcao == "1":
                 menu_centros = MenuCentrosDistribuicao()
@@ -35,7 +38,8 @@ class MenuPrincipal:
                 menu_clientes = MenuCliente()
                 menu_clientes.exibir_menu_cliente()
             elif opcao == "5":
-                print("Saindo do sistema... Até logo!")
+                print("\n✅ Saindo do sistema... Até logo!")
                 break
             else:
-                print("Opção inválida! Tente novamente.")
+                print("\n❌ Opção inválida! Tente novamente.")
+

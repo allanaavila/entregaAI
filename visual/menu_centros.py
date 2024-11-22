@@ -13,22 +13,24 @@ class MenuCentrosDistribuicao:
 
     def menu_principal(self):
         while True:
-            print("\n--- Menu Centros de Distribuição ---")
-            print("1. Listar Centros de Distribuição")
-            print("2. Listar Caminhões por Centro de Distribuição")
-            print("3. Voltar ao menu principal")
-            opcao = input("Escolha uma opção: ")
+            print("\n" + "=" * 50)
+            print("        🏢 Menu Centros de Distribuição       ")
+            print("=" * 50)
+            print("1️⃣  Listar Centros de Distribuição")
+            print("2️⃣  Listar Caminhões por Centro de Distribuição")
+            print("3️⃣  🔙 Voltar ao Menu Principal")
+            print("=" * 50)
+            opcao = input("🔹 Escolha uma opção: ")
 
             if opcao == "1":
                 self.listar_centros()
             elif opcao == "2":
                 self.listar_caminhoes_centro()
             elif opcao == "3":
-                print("Saindo do sistema... Até logo!")
+                print("\n✅ Saindo do sistema... Até logo!")
                 break
             else:
-                print("Opção inválida! Tente novamente.")
-
+                print("\n❌ Opção inválida! Tente novamente.")
 
     def listar_centros(self):
         print("\n--- Lista de Centros de Distribuição ---")

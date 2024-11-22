@@ -13,12 +13,15 @@ class MenuCliente:
 
     def exibir_menu_cliente(self):
         while True:
-            print("\n--- Menu de Clientes ---")
-            print("1. Cadastrar Cliente")
-            print("2. Listar Clientes")
-            print("3. Remover Cliente")
-            print("4. Voltar ao menu principal")
-            opcao = input("Escolha uma opção: ")
+            print("\n" + "=" * 50)
+            print("            👥 Menu de Clientes               ")
+            print("=" * 50)
+            print("1️⃣  Cadastrar Cliente")
+            print("2️⃣  Listar Clientes")
+            print("3️⃣  Remover Cliente")
+            print("4️⃣  🔙 Voltar ao Menu Principal")
+            print("=" * 50)
+            opcao = input("🔹 Escolha uma opção: ")
 
             if opcao == "1":
                 self.cadastrar_cliente()
@@ -27,10 +30,10 @@ class MenuCliente:
             elif opcao == "3":
                 self.remover_cliente()
             elif opcao == "4":
+                print("\n✅ Retornando ao menu principal...")
                 break
             else:
-                print("Opção Inválida! Tente novamente.")
-
+                print("\n❌ Opção inválida! Tente novamente.")
 
     def cadastrar_cliente(self):
         cadastro = Cadastro(Entrega, Cliente)

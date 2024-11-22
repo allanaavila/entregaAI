@@ -15,16 +15,19 @@ class MenuEntregas:
 
     def menu_principal(self):
         while True:
-            print("\n--- Menu de Entregas ---")
-            print("1. Cadastrar Entrega")
-            print("2. Alocar Entregas")
-            print("3. Listar Entregas")
-            print("4. Listar Alocações das Entregas")
-            print("5. Despachar entrega")
-            print("6. Finalizar entrega")
-            print("7. Cancelar Entrega")
-            print("8. Voltar ao menu principal")
-            opcao = input("Escolha uma opção: ")
+            print("\n" + "=" * 60)
+            print("               🚚 Menu de Entregas               ")
+            print("=" * 60)
+            print("1️⃣  Cadastrar Entrega")
+            print("2️⃣  Alocar Entregas")
+            print("3️⃣  Listar Entregas")
+            print("4️⃣  Listar Alocações das Entregas")
+            print("5️⃣  Despachar Entrega")
+            print("6️⃣  Finalizar Entrega")
+            print("7️⃣  Cancelar Entrega")
+            print("8️⃣  🔙 Voltar ao Menu Principal")
+            print("=" * 60)
+            opcao = input("🔹 Escolha uma opção: ")
 
             if opcao == "1":
                 self.cadastrar_entrega()
@@ -41,11 +44,10 @@ class MenuEntregas:
             elif opcao == "7":
                 self.cancelar_entrega()
             elif opcao == "8":
-                print("Retornando ao menu principal...")
+                print("\n✅ Retornando ao menu principal...")
                 break
             else:
-                print("Opção inválida! Tente novamente.")
-
+                print("\n❌ Opção inválida! Tente novamente.")
 
     def alocar_entregas(self):
         self.logistica.alocar_caminhoes()

@@ -12,11 +12,14 @@ class MenuCaminhoes:
 
     def exibir_menu(self):
         while True:
-            print("\n--- Menu de Caminhões ---")
-            print("1. Cadastrar Caminhão")
-            print("2. Listar Caminhões")
-            print("3. Remover Caminhão")
-            print("4. Voltar ao menu principal")
+            print("\n" + "=" * 40)
+            print("          🚛 Menu de Caminhões 🚛         ")
+            print("=" * 40)
+            print("1️⃣  Cadastrar Caminhão")
+            print("2️⃣  Listar Caminhões")
+            print("3️⃣  Remover Caminhão")
+            print("4️⃣  Voltar ao menu principal")
+            print("=" * 40)
             opcao = input("Escolha uma opção: ")
 
             if opcao == "1":
@@ -26,9 +29,10 @@ class MenuCaminhoes:
             elif opcao == "3":
                 self.remover_caminhao()
             elif opcao == "4":
+                print("\n✅ Retornando ao menu principal...")
                 break
             else:
-                print("Opção inválida! Tente novamente.")
+                print("\n❌ Opção inválida! Tente novamente.")
 
     def cadastrar_caminhao(self):
         print("\n--- Cadastrar Caminhão ---")
