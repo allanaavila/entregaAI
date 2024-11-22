@@ -35,7 +35,8 @@ class MenuCaminhoes:
                 print("\n❌ Opção inválida! Tente novamente.")
 
     def cadastrar_caminhao(self):
-        print("\n--- Cadastrar Caminhão ---")
+        print("\n    🚛  Cadastrar Caminhão  🚛   ")
+
         placa = input("Digite a placa do caminhão: ")
         modelo = input("Digite o modelo do caminhão: ")
         capacidade = float(input("Digite a capacidade do caminhão (em kg): "))
@@ -43,56 +44,84 @@ class MenuCaminhoes:
         custo_km = float(input("Digite o custo por km do caminhão: "))
 
         centros_distribuicao = self.banco_de_dados.listar_centros()
-        print("\nCentros de Distribuição disponíveis:")
+        if not centros_distribuicao:
+            print("Nenhum centro de distribuição cadastrado. Não é possível cadastrar o caminhão.")
+            return
+
+        print("\nEscolha o Centro de Distribuição para o caminhão:")
+        print(f"{'-' * 110}")
+        print(
+            f"{'ID':<5} | {'Código':<10} | {'Nome':<35} | {'Cidade':<20} | {'Estado':<5} | {'Capacidade Máxima':<15}")
+        print(f"{'-' * 110}")
+
         for centro in centros_distribuicao:
-            print(f"{centro.id}. {centro.nome} - {centro.cidade}, {centro.estado}")
-        centro_id = int(input("Escolha o centro de distribuição para o caminhão (número): "))
+            print(
+                f"{centro.id:<5} | {centro.codigo:<10} | {centro.nome:<35} | {centro.cidade:<20} | {centro.estado:<5} | {centro.capacidade_maxima:<15} kg")
+            print(f"{'-' * 110}")
 
-        centro_selecionado = self.banco_de_dados.buscar_centro_por_id(centro_id)
+        try:
+            centro_id = int(input("Escolha o centro de distribuição para o caminhão (ID): "))
 
-        if not centro_selecionado:
-            print(f"Centro com o id '{centro_id}' não encontrado no banco de dados.")
+            centro_selecionado = self.banco_de_dados.buscar_centro_por_id(centro_id)
+            if not centro_selecionado:
+                print(f"Centro com o ID '{centro_id}' não encontrado. Cadastro cancelado.")
+                return
 
-        caminhao = Caminhao(
-            placa=placa,
-            modelo=modelo,
-            capacidade=capacidade,
-            velocidade_media=velocidade_media,
-            custo_km=custo_km,
-            centro_distribuicao_id=centro_id
-        )
+            caminhao = Caminhao(
+                placa=placa,
+                modelo=modelo,
+                capacidade=capacidade,
+                velocidade_media=velocidade_media,
+                custo_km=custo_km,
+                centro_distribuicao_id=centro_selecionado.id
+            )
 
-        self.session.add(caminhao)
-        self.session.commit()
-        print("Caminhão cadastrado com sucesso!")
-        self.session.close()
+            self.session.add(caminhao)
+            self.session.commit()
+            print("\nCaminhão cadastrado com sucesso!")
+            print(f"ID do Caminhão: {caminhao.id} | Modelo: {caminhao.modelo} | Placa: {caminhao.placa}")
 
+        except ValueError:
+            print("Erro: Digite um ID válido para o centro de distribuição.")
+        finally:
+            self.session.close()
 
     def listar_caminhoes(self):
-        print("\n--- Listar Caminhões ---")
+        print("\n")
+        print(" 🚛  Listagem dos Caminhões  🚛   \n")
         caminhoes = self.banco_de_dados.listar_caminhoes()
 
         if not caminhoes:
             print("Nenhum caminhão cadastrado.")
         else:
-            for caminhao in caminhoes:
-                print(f"ID: {caminhao.id}, Placa: {caminhao.placa}, Modelo: {caminhao.modelo}, "
-                      f"Capacidade: {caminhao.capacidade} kg, Velocidade Média: {caminhao.velocidade_media} km/h, "
-                      f"Custo por Km: R${caminhao.custo_km}, Centro de Distribuição ID: {caminhao.centro_distribuicao_id}")
+            print(
+                f"{'ID':^6} | {'📍Placa':^10} | {'🚛 Modelo':^20} | {'📦 Capacidade':^12} | {'⏱️ Velocidade':^14} | {'💰 Custo/Km':^14} | {'🏢 Centro ID':^10}")
+            print("=" * 115)
 
+            for caminhao in caminhoes:
+                print(
+                    f"{caminhao.id:^6} | {caminhao.placa:^11} | {caminhao.modelo:^21} | {caminhao.capacidade:^13} | {caminhao.velocidade_media:^15} | R${caminhao.custo_km:^13} | {caminhao.centro_distribuicao_id:^11}"
+                )
+                print("=" * 115)
 
     def remover_caminhao(self):
-        print("\n--- Remover Caminhão ---")
-
+        print("\n")
+        print(" 🚛  Remover Caminhões  🚛   \n")
         caminhoes = self.banco_de_dados.listar_caminhoes()
 
         if not caminhoes:
             print("Nenhum caminhão cadastrado.")
             return
 
+        print(
+            f"{'ID':^6} | {'📍Placa':^10} | {'🚛 Modelo':^20} | {'📦 Capacidade':^12} | {'⏱️ Velocidade':^14} | {'💰 Custo/Km':^14} | {'🏢 Centro ID':^10}")
+        print("=" * 115)
+
         for i, caminhao in enumerate(caminhoes, start=1):
             print(
-                f"{i}. ID: {caminhao.id} - Modelo: {caminhao.modelo} - Placa: {caminhao.placa}, Capacidade: {caminhao.capacidade} kg")
+                f"{caminhao.id:^6} | {caminhao.placa:^11} | {caminhao.modelo:^21} | {caminhao.capacidade:^13} | {caminhao.velocidade_media:^15} | R${caminhao.custo_km:^13.2f} | {caminhao.centro_distribuicao_id:^11}"
+            )
+            print("=" * 115)
 
         caminhao_id = input("Digite o ID do caminhão a ser removido: ").strip()
 

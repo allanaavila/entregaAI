@@ -38,10 +38,15 @@ class MenuCentrosDistribuicao:
         if not centros:
             print("Nenhum centro de distribuição cadastrado.")
         else:
+            print("\nDetalhes dos Centros de Distribuição:")
+            print(f"{'-' * 110}")
+            print(
+                f"{'ID':<5} | {'Código':<10} | {'Nome':<35} | {'Cidade':<20} | {'Estado':<5} | {'Capacidade Máxima':<15}")
+            print(f"{'-' * 110}")
             for centro in centros:
                 print(
-                    f"ID: {centro.id} | Código: {centro.codigo} | Nome: {centro.nome} | Cidade: {centro.cidade} | Estado: {centro.estado} | Capacidade: {centro.capacidade_maxima} kg"
-                )
+                    f"{centro.id:<5} | {centro.codigo:<10} | {centro.nome:<35} | {centro.cidade:<20} | {centro.estado:<5} | {centro.capacidade_maxima:<15} kg")
+                print(f"{'-' * 110}")
 
     def listar_caminhoes_centro(self):
         print("\n--- Listar Caminhões por Centro de Distribuição ---")
@@ -50,9 +55,12 @@ class MenuCentrosDistribuicao:
             print("Nenhum centro de distribuição cadastrado.")
 
         print("\nCentros de Distribuição:")
+        print(f"{'-' * 80}")
+        print(f"{'ID':<5} | {'Nome do Centro':<35} | {'Cidade':<20} | {'Estado':<2}")
+        print(f"{'-' * 80}")
         for id, centro in enumerate(centros, start=1):
-            print(
-                f"{id}. {centro.nome} ({centro.cidade}, {centro.estado})")
+            print(f"{id:<5} | {centro.nome:<35} | {centro.cidade:<20} | {centro.estado:<2}")
+        print(f"{'-' * 80}")
 
         try:
             opcao = int(input("\nEscolha o número do centro para listar os caminhões: "))
@@ -66,11 +74,13 @@ class MenuCentrosDistribuicao:
             if not caminhoes:
                 print(f"Nenhum caminhão cadastrado para o centro {centro_escolhido.nome}.")
             else:
-                print(f"\n--- Caminhões do Centro {centro_escolhido.nome} ---")
+                print(f"\n{'-' * 10} Caminhões do {centro_escolhido.nome} {'-' * 10} \n")
+                print(f"{'ID':^7} | {'Modelo':^30} | {'Placa':^12}")
+                print("=" * 70)
                 for caminhao in caminhoes:
-                    print(
-                    f"ID: {caminhao.id} | Modelo: {caminhao.modelo} | Placa: {caminhao.placa}"
-                    )
+                    print(f"{caminhao.id:^7} | {caminhao.modelo:^30} | {caminhao.placa:^12}")
+                print("=" * 70)
+
 
         except ValueError:
             print("Entrada inválida. Digite o número correspondente ao centro.")
