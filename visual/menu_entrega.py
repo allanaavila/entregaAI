@@ -53,20 +53,55 @@ class MenuEntregas:
         self.logistica.alocar_caminhoes()
 
     def cadastrar_entrega(self):
-        print("\n--- Cadastrar Entrega ---")
-        peso = float(input("Digite o peso da entrega (em kg): "))
-        volume = float(input("Digite o volume da entrega: "))
-        prazo = datetime.now() + timedelta(days=int(input("Digite o prazo de entrega (em dias): ")))
-        clientes = self.banco_de_dados.listar_clientes()
-        print("\n --- Clientes disponíveis ---\n")
-        for cliente_cadastrado in clientes:
-            print(f"{cliente_cadastrado.id}: {cliente_cadastrado.nome} | "
-                  f"Endereço: {cliente_cadastrado.endereco} - {cliente_cadastrado.cidade}, {cliente_cadastrado.estado}")
+        print("\n    📦  Cadastrar Entrega  📦   ")
 
-        cliente_id = int(input("Digite o ID do cliente: "))
-        cliente = self.banco_de_dados.buscar_cliente_por_id(cliente_id)
-        if not cliente:
-            print(f"Cliente com o id '{cliente_id} não encontrado no banco de dados.")
+        try:
+            peso = float(input("Digite o peso da entrega (em kg): "))
+            volume = float(input("Digite o volume da entrega (m³): "))
+            prazo_dias = int(input("Digite o prazo de entrega (em dias): "))
+            prazo = datetime.now() + timedelta(days=prazo_dias)
+        except ValueError:
+            print("❌ Erro: Por favor, insira valores válidos para peso, volume ou prazo.")
+            return
+
+        clientes = self.banco_de_dados.listar_clientes()
+        if not clientes:
+            print("❌ Nenhum cliente cadastrado. Não é possível cadastrar a entrega.")
+            return
+
+        print("\n --- Clientes Disponíveis ---")
+        print(f"{'ID':<5} | {'Nome':<30} | {'Endereço':<40} | {'Cidade/Estado':<20}")
+        print("-" * 110)
+        for cliente_cadastrado in clientes:
+            print(f"{cliente_cadastrado.id:<5} | {cliente_cadastrado.nome:<30} | "
+                  f"{cliente_cadastrado.endereco:<40} | {cliente_cadastrado.cidade}, {cliente_cadastrado.estado}")
+        print("-" * 110)
+
+        try:
+            cliente_id = int(input("Digite o ID do cliente para a entrega: "))
+            cliente = self.banco_de_dados.buscar_cliente_por_id(cliente_id)
+            if not cliente:
+                print(f"❌ Cliente com o ID '{cliente_id}' não encontrado no banco de dados.")
+                return
+        except ValueError:
+            print("❌ Erro: Por favor, insira um ID válido.")
+            return
+
+        print("\n🔒 Confirme os dados antes de cadastrar a entrega:")
+        print(f"\nEntrega:")
+        print(f"Peso: {peso} kg")
+        print(f"Volume: {volume} m³")
+        print(f"Prazo de entrega: {prazo.strftime('%d/%m/%Y')}")
+
+        print(f"\nCliente Selecionado:")
+        print(f"Nome: {cliente.nome}")
+        print(f"Endereço: {cliente.endereco}")
+        print(f"Cidade/Estado: {cliente.cidade}, {cliente.estado}")
+
+        confirmacao = input("\n✅ Confirmar cadastro? (S/N): ").strip().lower()
+
+        if confirmacao != 's':
+            print("\n❌ Cadastro cancelado.")
             return
 
         entrega = Entrega(
@@ -81,89 +116,142 @@ class MenuEntregas:
             cliente_id=cliente_id
         )
 
-        self.session.add(entrega)
-        self.session.commit()
-        self.logistica.alocar_caminhoes()
-        print("Entrega cadastrada com sucesso!")
+        try:
+            self.session.add(entrega)
+            self.session.commit()
+            self.logistica.alocar_caminhoes()
+            print("\n✅ Entrega cadastrada com sucesso!")
+            print(
+                f"\nID da Entrega: {entrega.id} | Peso: {entrega.peso} kg | Volume: {entrega.volume} m³ | Prazo: {prazo.strftime('%d/%m/%Y')}")
+        except Exception as e:
+            print(f"❌ Erro ao cadastrar a entrega: {e}")
+            self.session.rollback()
+        finally:
+            self.session.close()
 
     def listar_entregas(self):
-        print("\n--- Lista de Entregas ---")
+        print("\n    📦  Lista de Entregas  📦   ")
         entregas = self.session.query(Entrega).all()
+
         if not entregas:
-            print("Nenhuma entrega cadastrada.")
-        else:
-            for entrega in entregas:
-                status = f"{entrega.status}".replace("StatusEntrega.", "").replace("_", " ").title()
-                prazo = self.__formatar_data(f"{entrega.prazo}")
-                print(
-                    f"Código: {entrega.id} | Peso: {entrega.peso} kg | Prazo: {prazo} | Status: {status}"
-                )
+            print("❌ Nenhuma entrega cadastrada.")
+            return
+
+        print(f"\n{'Código':<10} | {'Peso':<10} | {'Prazo':<15} | {'Status':<20}")
+        print("-" * 65)
+
+        for entrega in entregas:
+            status = f"{entrega.status}".replace("StatusEntrega.", "").replace("_", " ").title()
+            prazo = self.__formatar_data(f"{entrega.prazo}")
+            print(f"{entrega.id:<10} | {entrega.peso:<10} kg | {prazo:<15} | {status:<20}")
+        print("-" * 65)
+
 
     def colocar_entrega_em_rota(self):
+        print("\n    📦  Atualizar Status da Entrega  📦   ")
         self.listar_entregas()
-        id_entrega = int(input("Selecione a entrega que deseja despachar: "))
-        entrega = self.session.query(Entrega).get(id_entrega)
-        if not entrega:
-            print("Entrega não encontrada.")
+
+        try:
+            id_entrega = int(input("\nSelecione o ID da entrega que deseja despachar: "))
+        except ValueError:
+            print("❌ ID inválido. Por favor, insira um número válido.")
             return
+
+        entrega = self.session.query(Entrega).get(id_entrega)
+
+        if not entrega:
+            print("❌ Entrega não encontrada. Verifique o ID e tente novamente.")
+            return
+
         if entrega.status == StatusEntrega.ENTREGUE:
-            print("Entrega já foi finalizada.")
+            print("⚠️ A entrega já foi finalizada e não pode ser alterada.")
             return
 
         entrega.status = StatusEntrega.EM_ROTA
         self.session.commit()
-        print("Status da entrega atualizado com sucesso!")
+        print(f"\n✅ Status da entrega {entrega.id} atualizado para 'Em Rota' com sucesso!")
+
 
     def cancelar_entrega(self):
+        print("\n    ❌  Cancelar Entrega  ❌   ")
         self.listar_entregas()
-        id_entrega = int(input("Selecione a entrega que deseja cancelar: "))
+
+        try:
+            id_entrega = int(input("\nSelecione o ID da entrega que deseja cancelar: "))
+        except ValueError:
+            print("❌ ID inválido. Por favor, insira um número válido.")
+            return
+
         entrega = self.banco_de_dados.buscar_entrega_por_id(id_entrega)
+
         if not entrega:
-            print("Entrega não encontrada.")
+            print("❌ Entrega não encontrada. Verifique o ID e tente novamente.")
             return
 
         if entrega.status == StatusEntrega.ENTREGUE:
-            print("Entrega já foi finalizada.")
+            print("⚠️ A entrega já foi finalizada e não pode ser cancelada.")
             return
 
         entrega.status = StatusEntrega.CANCELADA
         self.session.commit()
-        print("Entrega cancelada com sucesso!")
+        print(f"\n✅ A entrega {entrega.id} foi cancelada com sucesso!")
 
     def exibir_alocacoes(self):
         rotas = self.banco_de_dados.listar_rotas()
-        if rotas.__len__() == 0:
-            print("Não há entregas alocadas para exibir")
+
+        if not rotas:
+            print("❌ Não há entregas alocadas para exibir.")
             return
-        print("\n --- Entregas alocadas ---")
+
+        print("\n    --- 🚚 Entregas Alocadas 🚚 ---\n")
 
         for rota in rotas:
             caminhao = self.banco_de_dados.buscar_caminhao_por_id(rota.entrega_id)
             centro_distribuicao = self.banco_de_dados.buscar_centro_por_id(caminhao.centro_distribuicao_id)
             entrega = self.banco_de_dados.buscar_entrega_por_id(rota.entrega_id)
+
             status = f"{entrega.status}".replace("StatusEntrega.", "").replace("_", " ").title()
             prazo = entrega.prazo.strftime("%d/%m/%Y %H:%M")
-            print(f"ID: {rota.entrega_id}"
-                  f" | Centro responsável: {centro_distribuicao.nome}"
-                  f" | Caminhão alocado: {caminhao.modelo} - {caminhao.placa}"
-                  f" | Distância total: {rota.distancia_total:.2f} | Custo total: R$ {rota.custo_total:.2f}"
-                  f" | Prazo: {prazo} | Status: {status}")
 
+            print(f"{'ID da Entrega:':<20} {rota.entrega_id}")
+            print(f"{'Centro Responsável:':<20} {centro_distribuicao.nome}")
+            print(f"{'Caminhão Alocado:':<20} {caminhao.modelo} - {caminhao.placa}")
+            print(f"{'Distância Total:':<20} {rota.distancia_total:.2f} km")
+            print(f"{'Custo Total:':<20} R$ {rota.custo_total:.2f}")
+            print(f"{'Prazo de Entrega:':<20} {prazo}")
+            print(f"{'Status da Entrega:':<20} {status}")
+            print("-" * 70)
 
     def finalizar_entrega(self):
         self.listar_entregas()
-        id = int(input("Selecione a entrega que deseja finalizar: "))
+
+        try:
+            id = int(input("Selecione a entrega que deseja finalizar (ID): "))
+        except ValueError:
+            print("⚠️ Erro: ID inválido. Por favor, insira um número.")
+            return
+
         entrega = self.banco_de_dados.buscar_entrega_por_id(id)
+
         if not entrega:
-            print("Entrega não encontrada.")
+            print(f"❌ Entrega com ID '{id}' não encontrada.")
+            return
+
+        if entrega.status == StatusEntrega.ENTREGUE:
+            print("✅ A entrega já foi finalizada.")
             return
 
         entrega.status = StatusEntrega.ENTREGUE
         rota = self.banco_de_dados.buscar_rota_por_id(entrega.rota_id)
 
-        rota.data_fim = datetime.now()
-        self.session.commit()
-        print("Entrega finalizada com sucesso!")
+        if rota:
+            rota.data_fim = datetime.now()
+            self.session.commit()
+            print(f"✅ Entrega {id} finalizada com sucesso!")
+            print(f"    Caminhão: {rota.caminhao.modelo} - {rota.caminhao.placa}")
+            print(f"    Data de conclusão: {rota.data_fim.strftime('%d/%m/%Y %H:%M')}")
+        else:
+            print("❌ Não foi possível encontrar a rota associada a esta entrega.")
 
 
     @staticmethod
