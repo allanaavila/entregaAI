@@ -105,18 +105,21 @@ class Logistica:
     @staticmethod
     def exibir_alocacao():
         if not Logistica.alocacoes:
-            print("Nenhuma alocação realizada.")
+            print("❌ Nenhuma alocação realizada.")
             return
 
+        print("\n--- 🚚 Alocações de Entregas ---\n")
+
         for entrega, caminhao, centro in Logistica.alocacoes:
+            prazo_formatado = entrega.prazo.strftime('%d/%m/%Y %H:%M')
+            print(f"{'=' * 70}")
+            print(f"🏢 **Centro de Distribuição:** {centro.nome} ({centro.cidade}, {centro.estado})")
             print(
-                f"\n--- Alocação ---"
-                f"\nCentro de Distribuição: {centro.nome} ({centro.cidade}, {centro.estado})"
-                f"\nCaminhão: {caminhao.modelo} - Placa: {caminhao.placa}, Capacidade: {caminhao.capacidade}kg"
-                f"\nEntrega: ID {entrega.id}, Peso: {entrega.peso}kg, Volume: {entrega.volume}, "
-                f"Prazo: {entrega.prazo.strftime('%Y-%m-%d %H:%M')}"
-                f"\nDestino: {entrega.endereco_entrega}, {entrega.cidade_entrega}, {entrega.estado_entrega}\n"
-            )
+                f"🚛 **Caminhão Alocado:** {caminhao.modelo} - {caminhao.placa} | Capacidade: {caminhao.capacidade} kg")
+            print(f"📦 **Entrega:** ID {entrega.id} | Peso: {entrega.peso} kg | Volume: {entrega.volume} m³")
+            print(f"🕒 **Prazo de Entrega:** {prazo_formatado}")
+            print(f"📍 **Destino:** {entrega.endereco_entrega}, {entrega.cidade_entrega}, {entrega.estado_entrega}")
+            print(f"{'=' * 70}\n")
 
     def __atualizar_dados(self):
         self.centros = self.session.query(CentroDistribuicao).all()

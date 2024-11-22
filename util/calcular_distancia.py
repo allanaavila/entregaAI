@@ -79,8 +79,15 @@ class CalcularDistancia:
                     melhor_distancia = distancia
                     melhor_rota = centro_codigo
 
-            print(
-                f"A menor rota para a entrega {entrega_codigo} é a partir do centro {melhor_rota} com uma distância de {melhor_distancia:.2f} km.")
+            if melhor_rota:
+                print(f"\n🔍 **Resultado da Busca pela Melhor Rota para Entrega {entrega_codigo}**")
+                print(f"{'=' * 70}")
+                print(f"🚚 **Centro de Distribuição Selecionado:** {melhor_rota}")
+                print(f"📍 **Endereço do Centro:** {centros_distribuicao[melhor_rota]}")
+                print(f"🛣️ **Distância até a entrega:** {melhor_distancia:.2f} km")
+                print(f"{'=' * 70}")
+            else:
+                print(f"\n⚠️ **Nenhuma rota válida encontrada para a entrega {entrega_codigo}.**")
         session.close()
 
     def atualizar_grafo(self, centros_distribuicao, destinos):
