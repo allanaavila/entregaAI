@@ -50,6 +50,7 @@ class CalcularDistancia:
         if latitude is not None and longitude is not None:
             self.grafo.add_node(nome, pos=(latitude, longitude))
 
+
     def encontrar_rota_mais_curta(self, origem, destino):
         try:
             caminho = nx.dijkstra_path(self.grafo, origem, destino, weight='weight')

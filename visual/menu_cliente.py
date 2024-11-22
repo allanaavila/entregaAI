@@ -18,7 +18,7 @@ class MenuCliente:
             print("=" * 50)
             print("1️⃣  Cadastrar Cliente")
             print("2️⃣  Listar Clientes")
-            print("4️⃣ 🔙 Voltar ao Menu Principal")
+            print("3️⃣  🔙 Voltar ao Menu Principal")
             print("=" * 50)
             opcao = input("🔹 Escolha uma opção: ")
 
