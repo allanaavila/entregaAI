@@ -45,15 +45,13 @@ class MenuCaminhoes:
 
         centros_distribuicao = self.banco_de_dados.listar_centros()
         if not centros_distribuicao:
-            print("Nenhum centro de distribuição cadastrado. Não é possível cadastrar o caminhão.")
+            print("\n❌ Nenhum centro de distribuição cadastrado. Não é possível cadastrar o caminhão.")
             return
 
         print("\nEscolha o Centro de Distribuição para o caminhão:")
         print(f"{'-' * 110}")
-        print(
-            f"{'ID':<5} | {'Código':<10} | {'Nome':<35} | {'Cidade':<20} | {'Estado':<5} | {'Capacidade Máxima':<15}")
+        print(f"{'ID':<5} | {'Código':<10} | {'Nome':<35} | {'Cidade':<20} | {'Estado':<5} | {'Capacidade Máxima':<15}")
         print(f"{'-' * 110}")
-
         for centro in centros_distribuicao:
             print(
                 f"{centro.id:<5} | {centro.codigo:<10} | {centro.nome:<35} | {centro.cidade:<20} | {centro.estado:<5} | {centro.capacidade_maxima:<15} kg")
@@ -64,7 +62,27 @@ class MenuCaminhoes:
 
             centro_selecionado = self.banco_de_dados.buscar_centro_por_id(centro_id)
             if not centro_selecionado:
-                print(f"Centro com o ID '{centro_id}' não encontrado. Cadastro cancelado.")
+                print(f"\n❌ Centro com o ID '{centro_id}' não encontrado. Cadastro cancelado.")
+                return
+
+            print("\n🔒 Confirme os dados antes de cadastrar:")
+            print(f"\nCaminhão:")
+            print(f"Placa: {placa}")
+            print(f"Modelo: {modelo}")
+            print(f"Capacidade: {capacidade} kg")
+            print(f"Velocidade Média: {velocidade_media} km/h")
+            print(f"Custo por Km: R$ {custo_km:.2f}")
+
+            print("\nCentro de Distribuição Selecionado:")
+            print(f"Nome: {centro_selecionado.nome}")
+            print(f"Cidade: {centro_selecionado.cidade}")
+            print(f"Estado: {centro_selecionado.estado}")
+            print(f"Capacidade Máxima: {centro_selecionado.capacidade_maxima} kg")
+
+            confirmacao = input("\n✅ Confirmar cadastro? (S/N): ").strip().lower()
+
+            if confirmacao != 's':
+                print("\n❌ Cadastro cancelado.")
                 return
 
             caminhao = Caminhao(
@@ -76,15 +94,20 @@ class MenuCaminhoes:
                 centro_distribuicao_id=centro_selecionado.id
             )
 
-            self.session.add(caminhao)
-            self.session.commit()
-            print("\nCaminhão cadastrado com sucesso!")
-            print(f"ID do Caminhão: {caminhao.id} | Modelo: {caminhao.modelo} | Placa: {caminhao.placa}")
+            try:
+                self.session.add(caminhao)
+                self.session.commit()
+                print("\n✅ Caminhão cadastrado com sucesso!")
+                print(f"ID do Caminhão: {caminhao.id} | Modelo: {caminhao.modelo} | Placa: {caminhao.placa}")
+            except Exception as e:
+                print(f"\n❌ Erro ao cadastrar caminhão: {e}")
+                self.session.rollback()
 
         except ValueError:
-            print("Erro: Digite um ID válido para o centro de distribuição.")
+            print("❌ Erro: Digite um ID válido para o centro de distribuição.")
         finally:
             self.session.close()
+
 
     def listar_caminhoes(self):
         print("\n")

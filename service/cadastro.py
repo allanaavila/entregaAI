@@ -55,24 +55,42 @@ class Cadastro:
     def adicionar_cliente(self):
         session = get_session()
 
-        print("\n--- Adicionar Cliente ---")
+        print("\n    📋  Adicionar Cliente  📋   ")
         nome = input("Digite o nome do cliente: ")
         cnpj = input("Digite o CNPJ do cliente: ")
+
         cnpj_validado = validar_cnpj(cnpj)
         if not cnpj_validado:
-            print("CNPJ inválido.")
+            print("\n❌ CNPJ inválido. Verifique e tente novamente.")
             return
 
         endereco = input("Digite o endereço do cliente: ")
         cidade = input("Digite a cidade do cliente: ")
         estado = input("Digite o estado do cliente: ")
 
+        print("\n🔍 Obtendo a localização do cliente...")
         coordenadas = obter_coordenadas_opencage(endereco, cidade, estado)
+
         if type(coordenadas) == dict:
-            print(f"Erro ao obter localização: {coordenadas['erro']}")
+            print(f"\n❌ Erro ao obter localização: {coordenadas['erro']}")
             return
         else:
             latitude, longitude = coordenadas
+
+        print("\n🔒 Confirme os dados antes de salvar:")
+        print(f"\nNome      : {nome}")
+        print(f"CNPJ      : {cnpj_validado}")
+        print(f"Endereço  : {endereco}")
+        print(f"Cidade    : {cidade}")
+        print(f"Estado    : {estado}")
+        print(f"Latitude  : {latitude}")
+        print(f"Longitude : {longitude}")
+
+        confirmacao = input("\n✅ Confirmar cadastro? (S/N): ").strip().lower()
+
+        if confirmacao != 's':
+            print("\n❌ Cadastro cancelado.")
+            return
 
         cliente = Cliente(
             nome=nome,
@@ -84,10 +102,15 @@ class Cadastro:
             longitude=longitude
         )
 
-        session.add(cliente)
-        session.commit()
-        print("Cliente cadastrado com sucesso!")
-        session.close()
+        try:
+            session.add(cliente)
+            session.commit()
+            print("\n✅ Cliente cadastrado com sucesso!")
+        except Exception as e:
+            print(f"\n❌ Erro ao cadastrar cliente: {e}")
+            session.rollback()
+        finally:
+            session.close()
 
 
     def adicionar_entrega(self):

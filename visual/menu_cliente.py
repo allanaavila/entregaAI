@@ -18,8 +18,7 @@ class MenuCliente:
             print("=" * 50)
             print("1️⃣  Cadastrar Cliente")
             print("2️⃣  Listar Clientes")
-            print("3️⃣  Remover Cliente")
-            print("4️⃣  🔙 Voltar ao Menu Principal")
+            print("4️⃣ 🔙 Voltar ao Menu Principal")
             print("=" * 50)
             opcao = input("🔹 Escolha uma opção: ")
 
@@ -28,8 +27,6 @@ class MenuCliente:
             elif opcao == "2":
                 self.listar_cliente()
             elif opcao == "3":
-                self.remover_cliente()
-            elif opcao == "4":
                 print("\n✅ Retornando ao menu principal...")
                 break
             else:
@@ -40,42 +37,18 @@ class MenuCliente:
         cadastro.adicionar_cliente()
 
     def listar_cliente(self):
-        print("\n--- Listar Clientes ---")
+        print("\n    📋  Listagem de Clientes  📋   ")
         clientes = self.banco_de_dados.listar_clientes()
 
         if not clientes:
             print("Nenhum cliente cadastrado.")
         else:
+            print(f"\n{'ID':^6} | {'Nome':^25} | {'CNPJ':^15} | {'Endereço':^30} | {'Cidade':^15} | {'Estado':^10}")
+            print("=" * 120)
             for cliente in clientes:
-                print(f"ID: {cliente.id}, Nome: {cliente.nome}, CNPJ: {cliente.cnpj}, "
-                      f"Endereço: {cliente.endereco}, Cidade: {cliente.cidade}, Estado: {cliente.estado}")
-
-
-    def remover_cliente(self):
-        print("\n--- Remover Cliente ---")
-        clientes = self.banco_de_dados.listar_clientes()
-
-        if not clientes:
-            print("Nenhum cliente cadastrado.")
-            return
-
-        for i, cliente in enumerate(clientes, start=1):
-            print(f"{i}. {cliente.nome} - CNPJ: {cliente.cnpj}")
-
-        cliente_index = int(input("Digite o número do cliente a ser removido: ")) - 1
-        if cliente_index < 0 or cliente_index >= len(clientes):
-            print("Opção inválida.")
-            return
-
-        cliente_remover = clientes[cliente_index]
-
-        try:
-            self.banco_de_dados.remover_cliente(cliente_remover.id)
-            print(f"Cliente {cliente_remover.nome} removido com sucesso!")
-        except ErroBancoDados as e:
-            print(f"Erro ao remover cliente: {str(e)}")
-
-
+                print(
+                    f"{cliente.id:^6} | {cliente.nome:^25} | {cliente.cnpj:^15} | {cliente.endereco:^30} | {cliente.cidade:^15} | {cliente.estado:^10}")
+            print("=" * 120)
 
     def __del__(self):
         self.session.close()
