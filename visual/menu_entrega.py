@@ -198,7 +198,7 @@ class MenuEntregas:
             print("❌ Não há entregas alocadas para exibir.")
             return
 
-        print("\n    --- 🚚 Entregas Alocadas 🚚 ---\n")
+        print("\n    --- 🚚 Entregas Alocadas 🚚 ---")
 
         for rota in rotas:
             caminhao = self.banco_de_dados.buscar_caminhao_por_id(rota.caminhao_id)
@@ -207,14 +207,16 @@ class MenuEntregas:
             status = f"{entrega.status}".replace("StatusEntrega.", "").replace("_", " ").title()
             prazo = entrega.prazo.strftime("%d/%m/%Y %H:%M")
 
-            print(f"{'ID da Entrega:':<20} {rota.entrega_id}")
-            print(f"{'Centro Responsável:':<20} {centro_distribuicao.nome}")
-            print(f"{'Caminhão Alocado:':<20} {caminhao.modelo} - {caminhao.placa}")
-            print(f"{'Distância Total:':<20} {rota.distancia_total:.2f} km")
-            print(f"{'Custo Total:':<20} R$ {rota.custo_total:.2f}")
-            print(f"{'Prazo de Entrega:':<20} {prazo}")
-            print(f"{'Status da Entrega:':<20} {status}")
+            print("\n" + "=" * 70)
+            print(f"🚛 ID da Entrega: {rota.entrega_id}")
             print("-" * 70)
+            print(f"📍 Centro Responsável: {centro_distribuicao.nome}")
+            print(f"🚛 Caminhão Alocado: {caminhao.modelo} - {caminhao.placa}")
+            print(f"🛣️ Distância Total: {rota.distancia_total:.2f} km")
+            print(f"💰 Custo Total: R$ {rota.custo_total:.2f}")
+            print(f"📅 Prazo de Entrega: {prazo}")
+            print(f"📦 Status da Entrega: {status}")
+            print("=" * 70)
 
     def finalizar_entrega(self):
         self.listar_entregas()
