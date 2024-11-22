@@ -20,31 +20,25 @@ class MenuEntregas:
             print("               🚚 Menu de Entregas               ")
             print("=" * 60)
             print("1️⃣  Cadastrar Entrega")
-            print("2️⃣  Alocar Entregas")
-            print("3️⃣  Listar Entregas")
-            print("4️⃣  Listar Alocações das Entregas")
-            print("5️⃣  Despachar Entrega")
-            print("6️⃣  Finalizar Entrega")
-            print("7️⃣  Cancelar Entrega")
-            print("8️⃣  🔙 Voltar ao Menu Principal")
+            print("2️⃣  Despachar Entrega")
+            print("3️⃣  Listar Alocações das Entregas")
+            print("4️⃣  Finalizar Entrega")
+            print("5️⃣  Cancelar Entrega")
+            print("6️⃣  🔙 Voltar ao Menu Principal")
             print("=" * 60)
             opcao = input("🔹 Escolha uma opção: ")
 
             if opcao == "1":
                 self.cadastrar_entrega()
             elif opcao == "2":
-                self.alocar_entregas()
-            elif opcao == "3":
-                self.listar_entregas()
-            elif opcao == "4":
-                self.exibir_alocacoes()
-            elif opcao == "5":
                 self.colocar_entrega_em_rota()
-            elif opcao == "6":
+            elif opcao == "3":
+                self.exibir_alocacoes()
+            elif opcao == "4":
                 self.finalizar_entrega()
-            elif opcao == "7":
+            elif opcao == "5":
                 self.cancelar_entrega()
-            elif opcao == "8":
+            elif opcao == "6":
                 print("\n✅ Retornando ao menu principal...")
                 break
             else:

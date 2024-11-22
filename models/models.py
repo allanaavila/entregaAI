@@ -11,12 +11,6 @@ class StatusEntrega(enum.Enum):
     ENTREGUE = "entregue"
     CANCELADA = "cancelada"
 
-class StatusCaminhao(enum.Enum):
-    DISPONIVEL = "Disponível"
-    EM_TRANSITO = "Em Trânsito"
-    MANUTENCAO = "Em Manutenção"
-    INDISPONIVEL = "Indisponível"
-
 entrega_rota = Table(
     'entrega_rota',
     Base.metadata,
