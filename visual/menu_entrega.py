@@ -1,6 +1,7 @@
 from datetime import datetime, timedelta
 
 from database.config import get_session
+from models import cliente
 from models.entrega import Entrega
 from repository.banco_dados import BancoDados
 from service.sistema_logistico import Logistica
@@ -206,10 +207,9 @@ class MenuEntregas:
         print("\n    --- 🚚 Entregas Alocadas 🚚 ---\n")
 
         for rota in rotas:
-            caminhao = self.banco_de_dados.buscar_caminhao_por_id(rota.entrega_id)
+            caminhao = self.banco_de_dados.buscar_caminhao_por_id(rota.caminhao_id)
             centro_distribuicao = self.banco_de_dados.buscar_centro_por_id(caminhao.centro_distribuicao_id)
             entrega = self.banco_de_dados.buscar_entrega_por_id(rota.entrega_id)
-
             status = f"{entrega.status}".replace("StatusEntrega.", "").replace("_", " ").title()
             prazo = entrega.prazo.strftime("%d/%m/%Y %H:%M")
 
