@@ -43,12 +43,12 @@ class MenuCliente:
         if not clientes:
             print("Nenhum cliente cadastrado.")
         else:
-            print(f"\n{'ID':^6} | {'Nome':^25} | {'CNPJ':^15} | {'Endereço':^30} | {'Cidade':^15} | {'Estado':^10}")
-            print("=" * 120)
+            print(f"\n{'ID':^10} | {'Nome':^40} | {'CNPJ':^20} | {'Endereço':^40} | {'Cidade':^20} | {'Estado':^10}")
+            print("=" * 160)
             for cliente in clientes:
                 print(
-                    f"{cliente.id:^6} | {cliente.nome:^25} | {cliente.cnpj:^15} | {cliente.endereco:^30} | {cliente.cidade:^15} | {cliente.estado:^10}")
-            print("=" * 120)
+                    f"{cliente.id:^10} | {cliente.nome:^40} | {cliente.cnpj:^20} | {cliente.endereco:^40} | {cliente.cidade:^20} | {cliente.estado:^10}")
+            print("=" * 160)
 
     def __del__(self):
         self.session.close()
