@@ -4,6 +4,7 @@ from database.config import get_session
 from models.entrega import Entrega
 from repository.banco_dados import BancoDados
 from service.sistema_logistico import Logistica
+from models.models import StatusEntrega
 
 
 class MenuEntregas:
@@ -19,9 +20,10 @@ class MenuEntregas:
             print("2. Alocar Entregas")
             print("3. Listar Entregas")
             print("4. Listar Alocações das Entregas")
-            print("5. Atualizar Status de Entrega")
-            print("6. Cancelar Entrega")
-            print("7. Voltar ao menu principal")
+            print("5. Despachar entrega")
+            print("6. Finalizar entrega")
+            print("7. Cancelar Entrega")
+            print("8. Voltar ao menu principal")
             opcao = input("Escolha uma opção: ")
 
             if opcao == "1":
@@ -33,10 +35,12 @@ class MenuEntregas:
             elif opcao == "4":
                 self.exibir_alocacoes()
             elif opcao == "5":
-                self.atualizar_entrega()
+                self.colocar_entrega_em_rota()
             elif opcao == "6":
-                self.remover_entrega()
+                self.finalizar_entrega()
             elif opcao == "7":
+                self.cancelar_entrega()
+            elif opcao == "8":
                 print("Retornando ao menu principal...")
                 break
             else:
@@ -48,7 +52,6 @@ class MenuEntregas:
 
     def cadastrar_entrega(self):
         print("\n--- Cadastrar Entrega ---")
-        codigo = input("Digite o código da entrega: ")
         peso = float(input("Digite o peso da entrega (em kg): "))
         volume = float(input("Digite o volume da entrega: "))
         prazo = datetime.now() + timedelta(days=int(input("Digite o prazo de entrega (em dias): ")))
@@ -65,7 +68,6 @@ class MenuEntregas:
             return
 
         entrega = Entrega(
-            codigo=codigo,
             peso=peso,
             volume=volume,
             prazo=prazo,
@@ -89,36 +91,42 @@ class MenuEntregas:
             print("Nenhuma entrega cadastrada.")
         else:
             for entrega in entregas:
-                status = f"{entrega.status}".replace("StatusEntrega.", "").title()
+                status = f"{entrega.status}".replace("StatusEntrega.", "").replace("_", " ").title()
                 prazo = self.__formatar_data(f"{entrega.prazo}")
                 print(
-                    f"Código: {entrega.codigo} | Peso: {entrega.peso} kg | Prazo: {prazo} | Status: {status}"
+                    f"Código: {entrega.id} | Peso: {entrega.peso} kg | Prazo: {prazo} | Status: {status}"
                 )
 
-    def atualizar_entrega(self):
+    def colocar_entrega_em_rota(self):
         self.listar_entregas()
-        id_entrega = int(input("Digite o ID da entrega que deseja atualizar: "))
+        id_entrega = int(input("Selecione a entrega que deseja despachar: "))
         entrega = self.session.query(Entrega).get(id_entrega)
         if not entrega:
             print("Entrega não encontrada.")
             return
+        if entrega.status == StatusEntrega.ENTREGUE:
+            print("Entrega já foi finalizada.")
+            return
 
-        novo_status = input(f"Novo status ({entrega.status}): ")
-        entrega.status = novo_status or entrega.status
+        entrega.status = StatusEntrega.EM_ROTA
         self.session.commit()
         print("Status da entrega atualizado com sucesso!")
 
-    def remover_entrega(self):
+    def cancelar_entrega(self):
         self.listar_entregas()
-        id_entrega = int(input("Digite o ID da entrega que deseja remover: "))
-        entrega = self.session.query(Entrega).get(id_entrega)
+        id_entrega = int(input("Selecione a entrega que deseja cancelar: "))
+        entrega = self.banco_de_dados.buscar_entrega_por_id(id_entrega)
         if not entrega:
             print("Entrega não encontrada.")
             return
 
-        self.session.delete(entrega)
+        if entrega.status == StatusEntrega.ENTREGUE:
+            print("Entrega já foi finalizada.")
+            return
+
+        entrega.status = StatusEntrega.CANCELADA
         self.session.commit()
-        print("Entrega removida com sucesso!")
+        print("Entrega cancelada com sucesso!")
 
     def exibir_alocacoes(self):
         rotas = self.banco_de_dados.listar_rotas()
@@ -131,12 +139,29 @@ class MenuEntregas:
             caminhao = self.banco_de_dados.buscar_caminhao_por_id(rota.entrega_id)
             centro_distribuicao = self.banco_de_dados.buscar_centro_por_id(caminhao.centro_distribuicao_id)
             entrega = self.banco_de_dados.buscar_entrega_por_id(rota.entrega_id)
+            status = f"{entrega.status}".replace("StatusEntrega.", "").replace("_", " ").title()
             prazo = entrega.prazo.strftime("%d/%m/%Y %H:%M")
             print(f"ID: {rota.entrega_id}"
                   f" | Centro responsável: {centro_distribuicao.nome}"
                   f" | Caminhão alocado: {caminhao.modelo} - {caminhao.placa}"
                   f" | Distância total: {rota.distancia_total:.2f} | Custo total: R$ {rota.custo_total:.2f}"
-                  f" | Prazo: {prazo}")
+                  f" | Prazo: {prazo} | Status: {status}")
+
+
+    def finalizar_entrega(self):
+        self.listar_entregas()
+        id = int(input("Selecione a entrega que deseja finalizar: "))
+        entrega = self.banco_de_dados.buscar_entrega_por_id(id)
+        if not entrega:
+            print("Entrega não encontrada.")
+            return
+
+        entrega.status = StatusEntrega.ENTREGUE
+        rota = self.banco_de_dados.buscar_rota_por_id(entrega.rota_id)
+
+        rota.data_fim = datetime.now()
+        self.session.commit()
+        print("Entrega finalizada com sucesso!")
 
 
     @staticmethod

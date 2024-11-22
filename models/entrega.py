@@ -10,7 +10,6 @@ class Entrega(Base):
     __tablename__ = 'entregas'
 
     id = Column(Integer, primary_key=True)
-    codigo = Column(String(20), unique=True, nullable=False)
     peso = Column(Float, nullable=False)
     volume = Column(Float)
     prazo = Column(DateTime, nullable=False)
@@ -29,6 +28,7 @@ class Entrega(Base):
     centro_distribuicao_id = Column(Integer, ForeignKey('centros_distribuicao.id'))
     centro_distribuicao = relationship("CentroDistribuicao", back_populates="entregas")
 
+    rota_id = Column(Integer, ForeignKey('rotas.id'))
     rotas = relationship("Rota", secondary=entrega_rota, back_populates="entrega")
 
     created_at = Column(DateTime, default=datetime.now())

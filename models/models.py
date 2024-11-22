@@ -9,6 +9,7 @@ class StatusEntrega(enum.Enum):
     ALOCADA = "alocada"
     EM_ROTA = "em_rota"
     ENTREGUE = "entregue"
+    CANCELADA = "cancelada"
 
 class StatusCaminhao(enum.Enum):
     DISPONIVEL = "Disponível"

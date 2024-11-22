@@ -128,6 +128,18 @@ class BancoDados:
             logger.error(f"Falha ao buscar entrega: {str(e)}")
             raise ErroBancoDados(f"Falha ao buscar entrega: {str(e)}")
 
+    def buscar_rota_por_id(self, id: int) -> Type[Rota] | None:
+        try:
+            rota = self.session.query(Rota).filter_by(id=id).first()
+            if rota:
+                return rota
+            else:
+                print(f"Rota com id '{id}' não encontrado.")
+                return None
+        except Exception as e:
+            logger.error(f"Falha ao buscar rota: {str(e)}")
+            raise ErroBancoDados(f"Falha ao buscar rota: {str(e)}")
+
 
     def listar_centros(self) -> list[Type[CentroDistribuicao]]:
         try:

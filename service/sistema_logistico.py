@@ -26,17 +26,21 @@ class Logistica:
         """
         Realiza a alocação das entregas para os caminhões mais adequados.
         """
+        self.__atualizar_dados()
         if not self.centros or not self.caminhoes or not self.entregas:
             self.logger.warning("Dados insuficientes para realizar a alocação.")
             return
 
         for entrega in self.entregas:
-            if entrega.centro_distribuicao_id:
+            if entrega.centro_distribuicao_id or entrega.status != StatusEntrega.PENDENTE:
                 continue
             melhor_rota = None
             melhor_distancia = float('inf')
 
             for centro in self.centros:
+                if not centro.tem_caminhao_disponivel(entrega.peso):
+                    continue
+
                 distancia = self.calculadora_distancia.calcular_distancia(
                     (centro.latitude, centro.longitude),
                     (entrega.latitude_entrega, entrega.longitude_entrega)
@@ -64,12 +68,13 @@ class Logistica:
             self.session.add(caminhao)
 
             rota:Rota = self.gerar_rota(melhor_distancia, caminhao, entrega)
-
             self.session.add(rota)
-            entrega.centro_distribuicao_id = caminhao.centro_distribuicao_id
-            entrega.status = StatusEntrega.ALOCADA
-
             self.session.commit()
+            entrega.centro_distribuicao_id = caminhao.centro_distribuicao_id
+            entrega.rota_id = rota.id
+            entrega.status = StatusEntrega.ALOCADA
+            self.session.commit()
+
 
             Logistica.alocacoes.append((entrega, caminhao, melhor_rota))
             self.logger.info(f"Caminhão {caminhao.id} alocado para a entrega {entrega.id}.")
@@ -112,3 +117,8 @@ class Logistica:
                 f"Prazo: {entrega.prazo.strftime('%Y-%m-%d %H:%M')}"
                 f"\nDestino: {entrega.endereco_entrega}, {entrega.cidade_entrega}, {entrega.estado_entrega}\n"
             )
+
+    def __atualizar_dados(self):
+        self.centros = self.session.query(CentroDistribuicao).all()
+        self.caminhoes = self.session.query(Caminhao).all()
+        self.entregas = self.session.query(Entrega).all()
