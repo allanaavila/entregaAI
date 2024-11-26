@@ -9,12 +9,7 @@ class StatusEntrega(enum.Enum):
     ALOCADA = "alocada"
     EM_ROTA = "em_rota"
     ENTREGUE = "entregue"
-
-class StatusCaminhao(enum.Enum):
-    DISPONIVEL = "Disponível"
-    EM_TRANSITO = "Em Trânsito"
-    MANUTENCAO = "Em Manutenção"
-    INDISPONIVEL = "Indisponível"
+    CANCELADA = "cancelada"
 
 entrega_rota = Table(
     'entrega_rota',

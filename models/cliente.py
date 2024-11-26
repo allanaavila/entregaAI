@@ -9,7 +9,6 @@ class Cliente(Base):
     __tablename__ = 'clientes'
 
     id = Column(Integer, primary_key=True)
-    codigo = Column(String(20), unique=True, nullable=False)
     nome = Column(String(100), nullable=False)
     cnpj = Column(String(14), unique=True)
     endereco = Column(String(200))

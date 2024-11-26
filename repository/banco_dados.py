@@ -6,7 +6,9 @@ from sqlalchemy.orm import Session
 
 from models.centro_distribuicao import CentroDistribuicao
 from models.caminhao import Caminhao
+from models.cliente import Cliente
 from models.entrega import Entrega
+from models.rota import Rota
 from service.sistema_logistico import logger
 
 
@@ -24,6 +26,7 @@ class BancoDados:
             logger.error(f"Falha ao inicializar o banco de dados: {str(e)}")
             raise ErroBancoDados(f"Falha ao inicializar o banco de dados: {str(e)}")
 
+
     @contextmanager
     def transacao(self):
         try:
@@ -32,6 +35,7 @@ class BancoDados:
         except sqlite3.Error as e:
             self.conn.rollback()
             raise ErroBancoDados(f"Falha na transação: {str(e)}")
+
 
     def criar_tabelas(self) -> None:
         try:
@@ -63,8 +67,9 @@ class BancoDados:
         try:
             with self.transacao() as cursor:
                 cursor.execute(
-                    "INSERT OR REPLACE INTO centro_distribuicao (nome) VALUES (?)",
-                    (centro.nome,)
+                    "INSERT INTO centro_distribuicao (nome, codigo, endereco, cidade, estado, latitude, longitude, capacidade_maxima) VALUES (?, ?, ?, ?, ?, ?, ?, ?)",
+                    (centro.nome, centro.codigo, centro.endereco, centro.cidade, centro.estado, centro.latitude,
+                     centro.longitude, centro.capacidade_maxima)
                 )
                 centro.id = cursor.lastrowid
                 logger.info(f"Centro de distribuição '{centro.nome}' salvo com sucesso.")
@@ -72,12 +77,83 @@ class BancoDados:
             logger.error(f"Falha ao salvar centro de distribuição '{centro.nome}': {str(e)}")
             raise ErroBancoDados(f"Falha ao salvar centro de distribuição: {str(e)}")
 
-    def buscar_centro(self, codigo: str) -> Optional[CentroDistribuicao]:
+    def buscar_centro(self, codigo: str) -> Type[CentroDistribuicao] | None:
         try:
             centro = self.session.query(CentroDistribuicao).filter_by(codigo=codigo).first()
-            return centro
+            if centro:
+                return centro
+            else:
+                logger.warning(f"Código {codigo} não encontrado.")
+                return None
         except Exception as e:
+            logger.error(f"Falha ao buscar centro de distribuição: {str(e)}")
             raise ErroBancoDados(f"Falha ao buscar centro de distribuição: {str(e)}")
+
+
+    def buscar_centro_por_id(self, id: int) -> Type[CentroDistribuicao] | None:
+        try:
+            centro = self.session.query(CentroDistribuicao).filter_by(id=id).first()
+            if centro:
+                return centro
+            else:
+                logger.warning(f"Centro com id '{id}' não encontrado.")
+                return None
+        except Exception as e:
+            logger.error(f"Falha ao buscar centro de distribuição: {str(e)}")
+            raise ErroBancoDados(f"Falha ao buscar centro de distribuição: {str(e)}")
+
+
+    def buscar_caminhao_por_id(self, id: int) -> Type[Caminhao] | None:
+        try:
+            caminhao = self.session.query(Caminhao).filter_by(id=id).first()
+            if caminhao:
+                return caminhao
+            else:
+                print(f"Caminhão com id '{id}' não encontrado.")
+                return None
+        except Exception as e:
+            logger.error(f"Falha ao buscar caminhão de distribuição: {str(e)}")
+            raise ErroBancoDados(f"Falha ao buscar caminhão: {str(e)}")
+
+
+    def buscar_entrega_por_id(self, id: int) -> Type[Entrega] | None:
+        try:
+            entrega = self.session.query(Entrega).filter_by(id=id).first()
+            if entrega:
+                return entrega
+            else:
+                print(f"Entrega com id '{id}' não encontrado.")
+                return None
+        except Exception as e:
+            logger.error(f"Falha ao buscar entrega: {str(e)}")
+            raise ErroBancoDados(f"Falha ao buscar entrega: {str(e)}")
+
+    def buscar_rota_por_id(self, id: int) -> Type[Rota] | None:
+        try:
+            rota = self.session.query(Rota).filter_by(id=id).first()
+            if rota:
+                return rota
+            else:
+                print(f"Rota com id '{id}' não encontrado.")
+                return None
+        except Exception as e:
+            logger.error(f"Falha ao buscar rota: {str(e)}")
+            raise ErroBancoDados(f"Falha ao buscar rota: {str(e)}")
+
+
+    def listar_centros(self) -> list[Type[CentroDistribuicao]]:
+        try:
+            centros_distribuicao = self.session.query(CentroDistribuicao).all()
+            return centros_distribuicao
+        except Exception as e:
+            raise ErroBancoDados(f"Falha ao listar centros de distribuição: {str(e)}")
+
+    def listar_rotas(self) -> list[Type[Rota]]:
+        try:
+            rotas = self.session.query(Rota).all()
+            return rotas
+        except Exception as e:
+            raise ErroBancoDados(f"Falha ao listar rotas: {str(e)}")
 
     def listar_caminhoes(self) -> list[Type[Caminhao]]:
         try:
@@ -86,25 +162,20 @@ class BancoDados:
         except Exception as e:
             raise ErroBancoDados(f"Falha ao listar caminhões: {str(e)}")
 
-    def listar_centros(self) -> list[Type[CentroDistribuicao]]:
-        try:
-            centros_distribuicao = self.session.query(CentroDistribuicao).all()
-            return centros_distribuicao
-        except Exception as e:
-            raise ErroBancoDados(f"Falha ao listar caminhões: {str(e)}")
 
-    def listar_entregas(self) -> list[Type[Entrega]]:
+    def listar_caminhoes_por_centro(self, centro_id) -> list[Type[Caminhao]]:
         try:
-            entregas = self.session.query(Entrega).all()
-            return entregas
+            return self.session.query(Caminhao).filter_by(centro_distribuicao_id=centro_id).all()
         except Exception as e:
-            raise ErroBancoDados(f"Falha ao listar caminhões: {str(e)}")
+            raise ErroBancoDados(f"Falha ao listar caminhões para o centro {centro_id}: {str(e)}")
+
 
     def salvar_caminhao(self, caminhao: Caminhao, session: Session) -> None:
         try:
             self.session.add(caminhao)
         except Exception as e:
             raise ErroBancoDados(f"Falha ao salvar caminhão: {str(e)}")
+
 
     def buscar_caminhao_disponivel(self, capacidade_necessaria: int) -> List[Caminhao]:
         try:
@@ -135,6 +206,7 @@ class BancoDados:
         except sqlite3.Error as e:
             raise ErroBancoDados(f"Falha ao buscar caminhões disponíveis: {str(e)}")
 
+
     def atualizar_status_caminhao(self, caminhao_id: str, status: str) -> None:
         status_validos = {'disponivel', 'em_rota', 'manutencao'}
         if status not in status_validos:
@@ -156,6 +228,71 @@ class BancoDados:
             logger.info(f"Status do caminhão {caminhao_id} atualizado para '{status}'.")
         except ErroBancoDados as e:
             raise ErroBancoDados(f"Falha ao atualizar o status do caminhão: {str(e)}")
+
+
+    def remover_caminhao(self, caminhao_id: int) -> None:
+        try:
+            print(f"Buscando caminhão com ID: {caminhao_id}")
+            caminhao = self.session.query(Caminhao).filter(Caminhao.id == caminhao_id).first()
+
+            if caminhao is None:
+                raise ValueError(f"Caminhão com ID {caminhao_id} não encontrado.")
+
+            print(f"Removendo caminhão com ID: {caminhao.id}")
+            self.session.delete(caminhao)
+            self.session.commit()
+        except ValueError as e:
+            print(str(e))
+        except Exception as e:
+            print(f"Erro ao remover caminhão: {str(e)}")
+
+
+    def listar_clientes(self) -> list[Type[Cliente]]:
+        try:
+            clientes = self.session.query(Cliente).all()
+            return clientes
+        except Exception as e:
+            raise ErroBancoDados(f"Falha ao listar clientes: {str(e)}")
+
+    def buscar_cliente_por_id(self, id: int) -> Type[Cliente] | None:
+        try:
+            cliente = self.session.query(Cliente).filter_by(id=id).first()
+            if cliente:
+                return cliente
+            else:
+                logger.warn(f"Cliente com id '{id} não encontrado")
+                return None
+        except Exception as e:
+            raise ErroBancoDados(f"Falha ao listar cliente: {str(e)}")
+
+    def remover_cliente(self, cliente_id: int) -> None:
+        """
+        Remove um cliente do banco de dados pelo ID.
+        """
+        try:
+            self.cursor.execute("SELECT id FROM cliente WHERE id = ?", (cliente_id,))
+            row = self.cursor.fetchone()
+
+            if row is None:
+                raise ValueError(f"Cliente com ID {cliente_id} não encontrado.")
+            with self.transacao() as cursor:
+                cursor.execute("DELETE FROM cliente WHERE id = ?", (cliente_id,))
+                logger.info(f"Cliente com ID {cliente_id} removido com sucesso.")
+        except ValueError as e:
+            logger.error(str(e))
+            raise ErroBancoDados(str(e))
+        except sqlite3.Error as e:
+            logger.error(f"Falha ao remover cliente: {str(e)}")
+            raise ErroBancoDados(f"Falha ao remover cliente: {str(e)}")
+
+
+    def listar_entregas(self) -> list[Type[Entrega]]:
+        try:
+            entregas = self.session.query(Entrega).all()
+            return entregas
+        except Exception as e:
+            raise ErroBancoDados(f"Falha ao listar caminhões: {str(e)}")
+
 
     def __enter__(self):
         return self

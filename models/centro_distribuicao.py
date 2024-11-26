@@ -25,5 +25,18 @@ class CentroDistribuicao(Base):
     created_at = Column(DateTime, default=datetime.now())
     updated_at = Column(DateTime, default=datetime.now(), onupdate=datetime.now())
 
+    def tem_caminhao_disponivel(self, peso: float) -> bool:
+        if len(self.caminhoes) == 0 or not self.caminhoes:
+            return False
+        else:
+            tem_caminhao_disponivel = False
+            for caminhao in self.caminhoes:
+                if caminhao.pode_transportar(peso):
+                    tem_caminhao_disponivel = True
+                    break
+            return tem_caminhao_disponivel
+
+
+
 from models.caminhao import Caminhao
 from models.entrega import Entrega

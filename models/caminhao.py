@@ -4,7 +4,7 @@ from typing import NoReturn, Any
 from sqlalchemy import Column, Integer, String, Float, DateTime, Enum, ForeignKey
 from sqlalchemy.orm import relationship
 
-from models.models import Base, StatusCaminhao
+from models.models import Base
 
 
 class Caminhao(Base):
@@ -16,9 +16,7 @@ class Caminhao(Base):
     capacidade = Column(Float, nullable=False)
     velocidade_media = Column(Float, nullable=False)
     custo_km = Column(Float, nullable=False)
-    status = Column(Enum(StatusCaminhao), default=StatusCaminhao.DISPONIVEL)
     horas_operacao = Column(Integer)
-    #
     centro_distribuicao_id = Column(Integer, ForeignKey('centros_distribuicao.id'), nullable=False)
     centro_distribuicao = relationship("CentroDistribuicao", back_populates="caminhoes")
     rotas = relationship("Rota", back_populates="caminhao")
@@ -47,7 +45,8 @@ class Caminhao(Base):
         if self.pode_transportar(peso):
             self.carga_atual += peso
         else:
-            raise ValueError(f"O caminhão {self.placa} não tem capacidade suficiente para essa carga.")
+            raise ValueError(
+                f"O caminhão {self.placa} não tem capacidade suficiente para essa carga. Capacidade restante: {self.capacidade - self.carga_atual} kg.")
 
 from models.rota import Rota
 from models.centro_distribuicao import CentroDistribuicao

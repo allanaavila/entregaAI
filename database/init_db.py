@@ -17,7 +17,7 @@ def inserir_dados_iniciais(session):
     cds_iniciais = [
         CentroDistribuicao(
             codigo="CD-PA",
-            nome="CD Belém",
+            nome="Centro de Distribuição de Belém",
             endereco="Endereço CD Belém",
             cidade="Belém",
             estado="PA",
@@ -27,7 +27,7 @@ def inserir_dados_iniciais(session):
         ),
         CentroDistribuicao(
             codigo="CD-PE",
-            nome="CD Recife",
+            nome="Centro de Distribuição de Recife",
             endereco="Endereço CD Recife",
             cidade="Recife",
             estado="PE",
@@ -37,7 +37,7 @@ def inserir_dados_iniciais(session):
         ),
         CentroDistribuicao(
             codigo="CD-SP",
-            nome="CD São Paulo",
+            nome="Centro de Distribuição de São Paulo",
             endereco="Endereço CD São Paulo",
             cidade="São Paulo",
             estado="SP",
@@ -47,7 +47,7 @@ def inserir_dados_iniciais(session):
         ),
         CentroDistribuicao(
             codigo="CD-PR",
-            nome="CD Curitiba",
+            nome="Centro de Distribuição de Curitiba",
             endereco="Endereço CD Curitiba",
             cidade="Curitiba",
             estado="PR",
@@ -64,7 +64,5 @@ def inserir_dados_iniciais(session):
                 session.add(cd)
 
         session.commit()
-        logger.info("Dados iniciais inseridos com sucesso!")
     except Exception as e:
-        logger.error(f"Erro ao inserir dados iniciais: {str(e)}")
         session.rollback()
