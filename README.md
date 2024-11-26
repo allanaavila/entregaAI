@@ -113,7 +113,7 @@ Relate bugs ou sugira melhorias abrindo uma issue.
 Envie pull requests para melhorias ou correções.
 
 ## 📫 Contato
-**Autor: Allana Ávila**
-**Email: allanac.avila@gmail.com**
+**Autor:** Allana Ávila
+**Email:** allanac.avila@gmail.com
 
 
