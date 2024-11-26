@@ -83,26 +83,26 @@ python visual/menu_principal.py
 <div style="display: flex; justify-content: space-around;">
   <div>
     <strong>Menu Principal</strong><br>
-    <img src="image/principal.png" alt="Menu Principal" width="200"/>
+    <img src="image/principal.png" alt="Menu Principal" width="400"/>
   </div>
   <div>
     <strong>Menu Caminhões</strong><br>
-    <img src="image/caminhoes.png" alt="Menu Caminhões" width="200"/>
+    <img src="image/caminhoes.png" alt="Menu Caminhões" width="400"/>
   </div>
   <div>
     <strong>Menu Clientes</strong><br>
-    <img src="image/clientes.png" alt="Menu Clientes" width="200"/>
+    <img src="image/clientes.png" alt="Menu Clientes" width="400"/>
   </div>
 </div>
 <br>
 <div style="display: flex; justify-content: space-around;">
   <div>
     <strong>Menu Entregas</strong><br>
-    <img src="image/entregas.png" alt="Menu Entregas" width="200"/>
+    <img src="image/entregas.png" alt="Menu Entregas" width="400"/>
   </div>
   <div>
     <strong>Menu Centros</strong><br>
-    <img src="image/centros.png" alt="Menu Centros" width="200"/>
+    <img src="image/centros.png" alt="Menu Centros" width="400"/>
   </div>
 </div>
 
