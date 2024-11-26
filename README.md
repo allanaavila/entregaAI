@@ -83,12 +83,12 @@ python visual/menu_principal.py
 
 
 
-##📝 Contribuição
+## 📝 Contribuição
 -**Contribuições são bem-vindas!**
 Relate bugs ou sugira melhorias abrindo uma issue.
 Envie pull requests para melhorias ou correções.
 
-##📫 Contato
+## 📫 Contato
 -**Autor: Allana Ávila**
 -**Email: allanac.avila@gmail.com**
 
