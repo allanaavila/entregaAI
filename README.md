@@ -62,7 +62,7 @@ pip install -r requirements.txt
 ```
 
 3 - **Configure as variáveis de ambiente:**
-**Crie um arquivo .env na raiz do projeto com as seguintes informações:**
+-**Crie um arquivo .env na raiz do projeto com as seguintes informações:**
 ```bash
 OPENCAGE_API_KEY=your_api_key_here
 NOMINATIM_USER_AGENT=your_user_agent_here
