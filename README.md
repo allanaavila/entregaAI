@@ -108,12 +108,13 @@ python visual/menu_principal.py
 
 
 ## 📝 Contribuição
-**Contribuições são bem-vindas!**
-Relate bugs ou sugira melhorias abrindo uma issue.
+**Contribuições são bem-vindas!**  
+Relate bugs ou sugira melhorias abrindo uma issue.  
 Envie pull requests para melhorias ou correções.
 
 ## 📫 Contato
-**Autor:** Allana Ávila
+**Autor:** Allana Ávila  
 **Email:** allanac.avila@gmail.com
+
 
 
