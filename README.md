@@ -56,6 +56,40 @@ git clone https://github.com/allanaavila/entregaAI.git
 cd entregaAI
 ```
 
+2 - **Instale as dependências:**
+```bash
+pip install -r requirements.txt
+```
 
+3 - **Configure as variáveis de ambiente:**
+**Crie um arquivo .env na raiz do projeto com as seguintes informações:**
+```bash
+OPENCAGE_API_KEY=your_api_key_here
+NOMINATIM_USER_AGENT=your_user_agent_here
+```
+
+4 - **Inicialize o banco de dados:**
+```bash
+python -m database.init_db
+```
+
+## Execução
+**Para iniciar o sistema, execute o menu principal:**
+```bash
+python visual/menu_principal.py
+```
+
+## 📊 Demonstração
+
+
+
+##📝 Contribuição
+**Contribuições são bem-vindas!**
+Relate bugs ou sugira melhorias abrindo uma issue.
+Envie pull requests para melhorias ou correções.
+
+##📫 Contato
+-**Autor: Allana Ávila**
+-**Email: allanac.avila@gmail.com**
 
 
