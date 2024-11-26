@@ -80,21 +80,31 @@ python visual/menu_principal.py
 ```
 
 ## 📊 Demonstração
-**Menu Principal**
-![Menu Principal](image/principal.png)
-
-**Menu de Caminhões**
-![Menu Principal](image/caminhoes.png)
-
-
-**Menu de Clientes**
-![Menu Clientes](image/clientes.png)
-
-**Menu de Entregas**
-![Menu Entregas](image/entregas.png)
-
-**Menu de Centros**
-![Menu Centros](image/centros.png)
+<div style="display: flex; justify-content: space-around;">
+  <div>
+    <strong>Menu Principal</strong><br>
+    <img src="image/principal.png" alt="Menu Principal" width="200"/>
+  </div>
+  <div>
+    <strong>Menu Caminhões</strong><br>
+    <img src="image/caminhoes.png" alt="Menu Caminhões" width="200"/>
+  </div>
+  <div>
+    <strong>Menu Clientes</strong><br>
+    <img src="image/clientes.png" alt="Menu Clientes" width="200"/>
+  </div>
+</div>
+<br>
+<div style="display: flex; justify-content: space-around;">
+  <div>
+    <strong>Menu Entregas</strong><br>
+    <img src="image/entregas.png" alt="Menu Entregas" width="200"/>
+  </div>
+  <div>
+    <strong>Menu Centros</strong><br>
+    <img src="image/centros.png" alt="Menu Centros" width="200"/>
+  </div>
+</div>
 
 
 ## 📝 Contribuição
