@@ -1,4 +1,5 @@
 # 🚚 **Otimização Logística com Múltiplos Centros de Distribuição**
+**EntregaAI**
 
 Este projeto é uma solução algorítmica para otimizar o roteamento de entregas de uma empresa de logística com múltiplos centros de distribuição, minimizando custos e maximizando a eficiência operacional.
 
@@ -57,5 +58,40 @@ Este projeto é uma solução algorítmica para otimizar o roteamento de entrega
 │   └── menu_principal.py   # Menu principal do sistema
 │
 └── README.md               # Documentação do projeto
+
+
+## 🚀 Como Executar
+
+### Pré-requisitos
+- **Python 3.9+**
+- **API Key do OpenCage Geocoder**
+- **Banco de dados configurado - SQLite**
+
+---
+
+### Instalação
+
+1. **Clone o repositório**:
+   ```bash
+   git clone [https://github.com/seu-usuario/projeto-logistica.git](https://github.com/allanaavila/entregaAI.git)
+   cd projeto-entregaAI
+
+2. **Instale as dependências**:
+```bash
+pip install -r requirements.txt
+
+3. **Configure as variáveis de ambiente**:
+Crie um arquivo .env com as seguintes informações
+```bash
+OPENCAGE_API_KEY=your_api_key_here
+NOMINATIM_USER_AGENT=your_user_agent_here
+
+4. **Inicialize o banco de dados**:
+```bash
+python -m database.init_db
+
+
+
+
 
 
