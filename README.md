@@ -50,7 +50,7 @@ Este projeto é uma solução algorítmica para otimizar o roteamento de entrega
 - **Banco de dados configurado (SQLite)**
 
 ## Instalação
-1 - ** Clone o repositório:**
+1 - **Clone o repositório:**
 ```bash
 git clone https://github.com/allanaavila/entregaAI.git
 cd entregaAI
