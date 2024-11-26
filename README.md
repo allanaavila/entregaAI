@@ -74,7 +74,7 @@ python -m database.init_db
 ```
 
 ## Execução
-**Para iniciar o sistema, execute o menu principal:**
+-**Para iniciar o sistema, execute o menu principal:**
 ```bash
 python visual/menu_principal.py
 ```
@@ -84,7 +84,7 @@ python visual/menu_principal.py
 
 
 ##📝 Contribuição
-**Contribuições são bem-vindas!**
+-**Contribuições são bem-vindas!**
 Relate bugs ou sugira melhorias abrindo uma issue.
 Envie pull requests para melhorias ou correções.
 
